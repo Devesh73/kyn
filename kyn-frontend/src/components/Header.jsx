@@ -23,9 +23,7 @@ const Header = () => {
                 Contact
               </a>
             </li>
-            <li>
-              <Button onClick={() => alert("Button Clicked!")}>Get Started</Button>
-            </li>
+            
           </ul>
         </nav>
       </div>
