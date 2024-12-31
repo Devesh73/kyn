@@ -5,6 +5,7 @@ import './App.css'
 import Headers from './components/Header'
 import Footer from './components/Footer'
 import  Button  from './components/Button'
+import Dashboard from './screens/Dashboard'
 
 function App() {
   
@@ -15,6 +16,7 @@ function App() {
       <div className="flex justify-center mt-8">
         <Button onClick={() => alert("Button Clicked!")}>Get Started</Button>
       </div>
+      <Dashboard />
       <Footer />
     </>
   )
