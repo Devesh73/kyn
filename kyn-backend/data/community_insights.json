@@ -1,0 +1,74 @@
+{
+    "Community 1": {
+        "Size": 376,
+        "Top influencer (degree)": 148,
+        "Top influencer (betweenness)": 153,
+        "Top influencer (closeness)": 148,
+        "Interest distribution": {
+            "cooking": 136,
+            "finance": 128,
+            "fashion": 120,
+            "gaming": 131,
+            "fitness": 123,
+            "art": 138,
+            "travel": 142,
+            "music": 130,
+            "sports": 130,
+            "tech": 132
+        }
+    },
+    "Community 2": {
+        "Size": 332,
+        "Top influencer (degree)": 614,
+        "Top influencer (betweenness)": 614,
+        "Top influencer (closeness)": 608,
+        "Interest distribution": {
+            "fashion": 104,
+            "travel": 121,
+            "gaming": 112,
+            "fitness": 118,
+            "sports": 127,
+            "music": 115,
+            "cooking": 118,
+            "art": 127,
+            "tech": 109,
+            "finance": 101
+        }
+    },
+    "Community 3": {
+        "Size": 235,
+        "Top influencer (degree)": 174,
+        "Top influencer (betweenness)": 764,
+        "Top influencer (closeness)": 815,
+        "Interest distribution": {
+            "fashion": 82,
+            "travel": 74,
+            "art": 85,
+            "cooking": 82,
+            "fitness": 91,
+            "music": 92,
+            "tech": 89,
+            "finance": 89,
+            "sports": 92,
+            "gaming": 87
+        }
+    },
+    "Community 4": {
+        "Size": 57,
+        "Top influencer (degree)": 677,
+        "Top influencer (betweenness)": 200,
+        "Top influencer (closeness)": 480,
+        "Interest distribution": {
+            "travel": 17,
+            "fashion": 18,
+            "tech": 21,
+            "sports": 19,
+            "fitness": 21,
+            "art": 23,
+            "finance": 19,
+            "gaming": 17,
+            "cooking": 13,
+            "music": 20
+        }
+    }
+}
