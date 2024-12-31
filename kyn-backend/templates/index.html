@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Graph Visualization</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+        background-color: #f9f9f9;
+      }
+
+      h1 {
+        margin: 20px 0;
+      }
+
+      #graph-container {
+        width: 80%;
+        height: 600px;
+        margin: 0 auto;
+        border: 2px solid #ccc;
+        position: relative;
+        overflow: hidden;
+        background-color: #fff;
+      }
+
+      .button-container {
+        margin: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+
+      button {
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+        border-radius: 5px;
+      }
+
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      .input-container {
+        margin: 20px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .input-container input {
+        padding: 8px;
+        font-size: 14px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      .tooltip {
+        position: absolute;
+        background-color: rgba(0, 0, 0, 0.7);
+        color: #fff;
+        padding: 5px;
+        border-radius: 4px;
+        pointer-events: none;
+        font-size: 12px;
+        visibility: hidden;
+      }
+
+      .highlight {
+        stroke: red;
+        stroke-width: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Interactive Graph Visualization</h1>
+    <div class="input-container">
+      <label for="node-limit">Node Limit:</label>
+      <input type="number" id="node-limit" min="1" max="1000" value="50" />
+      <button id="apply-limit">Apply</button>
+    </div>
+    <div id="graph-container">
+      <div class="tooltip" id="tooltip"></div>
+    </div>
+    <div class="button-container">
+      <button id="reset-view">Reset View</button>
+      <button id="zoom-in">Zoom In</button>
+      <button id="zoom-out">Zoom Out</button>
+    </div>
+
+    <script>
+      const container = document.getElementById("graph-container");
+      const tooltip = document.getElementById("tooltip");
+      const width = container.offsetWidth;
+      const height = container.offsetHeight;
+
+      const zoom = d3
+        .zoom()
+        .scaleExtent([0.5, 5]) // Limit zoom scale
+        .on("zoom", (event) => {
+          graphGroup.attr("transform", event.transform);
+        });
+
+      const svg = d3
+        .select("#graph-container")
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .call(zoom);
+
+      const graphGroup = svg.append("g");
+
+      // Helper to find the largest connected component
+      function getLargestConnectedComponent(nodes, links) {
+        const adjacencyList = new Map();
+        nodes.forEach((node) => adjacencyList.set(node.id, []));
+        links.forEach((link) => {
+          adjacencyList.get(link.source).push(link.target);
+          adjacencyList.get(link.target).push(link.source);
+        });
+
+        const visited = new Set();
+        const components = [];
+
+        function dfs(node, component) {
+          visited.add(node);
+          component.push(node);
+          for (const neighbor of adjacencyList.get(node)) {
+            if (!visited.has(neighbor)) {
+              dfs(neighbor, component);
+            }
+          }
+        }
+
+        nodes.forEach((node) => {
+          if (!visited.has(node.id)) {
+            const component = [];
+            dfs(node.id, component);
+            components.push(component);
+          }
+        });
+
+        // Find the largest connected component
+        const largestComponent = components.reduce((a, b) =>
+          a.length > b.length ? a : b
+        );
+
+        const connectedNodes = largestComponent.map((id) =>
+          nodes.find((node) => node.id === id)
+        );
+        const connectedLinks = links.filter(
+          (link) =>
+            largestComponent.includes(link.source) &&
+            largestComponent.includes(link.target)
+        );
+
+        return { nodes: connectedNodes, links: connectedLinks };
+      }
+
+      function renderGraph(limit) {
+        // Fetch the graph data
+        fetch("http://localhost:5000/graph")
+          .then((response) => response.json())
+          .then((data) => {
+            // Apply node limit
+            const limitedNodes = data.nodes.slice(0, limit);
+
+            // Ensure links only connect nodes within the limit
+            const limitedLinks = data.links.filter(
+              (link) =>
+                limitedNodes.some((node) => node.id === link.source) &&
+                limitedNodes.some((node) => node.id === link.target)
+            );
+
+            // Get the largest connected component
+            const { nodes, links } = getLargestConnectedComponent(
+              limitedNodes,
+              limitedLinks
+            );
+
+            graphGroup.selectAll("*").remove(); // Clear previous graph
+
+            // Add gradient
+            const defs = svg.append("defs");
+            const gradient = defs
+              .append("radialGradient")
+              .attr("id", "node-gradient")
+              .attr("cx", "50%")
+              .attr("cy", "50%")
+              .attr("r", "50%");
+            gradient
+              .append("stop")
+              .attr("offset", "0%")
+              .attr("stop-color", "#42a5f5");
+            gradient
+              .append("stop")
+              .attr("offset", "100%")
+              .attr("stop-color", "#1e88e5");
+
+            const simulation = d3
+              .forceSimulation(nodes)
+              .force(
+                "link",
+                d3
+                  .forceLink(links)
+                  .id((d) => d.id)
+                  .distance(100)
+              )
+              .force("charge", d3.forceManyBody())
+              .force("center", d3.forceCenter(width / 2, height / 2));
+
+            const link = graphGroup
+              .append("g")
+              .attr("class", "links")
+              .selectAll("line")
+              .data(links)
+              .enter()
+              .append("line")
+              .attr("stroke", "#aaa")
+              .attr("stroke-width", 1.5);
+
+            const node = graphGroup
+              .append("g")
+              .attr("class", "nodes")
+              .selectAll("circle")
+              .data(nodes)
+              .enter()
+              .append("circle")
+              .attr("r", 8)
+              .attr("fill", "url(#node-gradient)")
+              .on("mouseover", (event, d) => {
+                tooltip.style.visibility = "visible";
+                tooltip.innerText = d.name || `Node ${d.id}`;
+                d3.select(event.currentTarget).classed("highlight", true);
+              })
+              .on("mousemove", (event) => {
+                tooltip.style.top = event.pageY + 10 + "px";
+                tooltip.style.left = event.pageX + 10 + "px";
+              })
+              .on("mouseout", (event) => {
+                tooltip.style.visibility = "hidden";
+                d3.select(event.currentTarget).classed("highlight", false);
+              })
+              .call(
+                d3
+                  .drag()
+                  .on("start", dragstarted)
+                  .on("drag", dragged)
+                  .on("end", dragended)
+              );
+
+            simulation.nodes(nodes).on("tick", () => {
+              link
+                .attr("x1", (d) => d.source.x)
+                .attr("y1", (d) => d.source.y)
+                .attr("x2", (d) => d.target.x)
+                .attr("y2", (d) => d.target.y);
+
+              node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+            });
+
+            simulation.force("link").links(links);
+
+            function dragstarted(event, d) {
+              if (!event.active) simulation.alphaTarget(0.3).restart();
+              d.fx = d.x;
+              d.fy = d.y;
+            }
+
+            function dragged(event, d) {
+              d.fx = event.x;
+              d.fy = event.y;
+            }
+
+            function dragended(event, d) {
+              if (!event.active) simulation.alphaTarget(0);
+              d.fx = null;
+              d.fy = null;
+            }
+
+            // Show tooltip and highlight on hover
+            node
+              .on("mouseover", function (event, d) {
+                d3.select(this).classed("highlight", true);
+                d3.select("#tooltip")
+                  .style("visibility", "visible")
+                  .html(`Node: ${d.name || `Node ${d.id}`}`);
+              })
+              .on("mousemove", function (event) {
+                const tooltip = d3.select("#tooltip");
+                tooltip
+                  .style("left", event.pageX + 10 + "px")
+                  .style("top", event.pageY + 10 + "px");
+              })
+              .on("mouseout", function () {
+                d3.select(this).classed("highlight", false);
+                d3.select("#tooltip").style("visibility", "hidden");
+              });
+
+            link
+              .on("mouseover", function (event, d) {
+                d3.select(this).classed("highlight", true);
+                d3.select("#tooltip")
+                  .style("visibility", "visible")
+                  .html(`Link: ${d.source.name} → ${d.target.name}`);
+              })
+              .on("mousemove", function (event) {
+                const tooltip = d3.select("#tooltip");
+                tooltip
+                  .style("left", event.pageX + 10 + "px")
+                  .style("top", event.pageY + 10 + "px");
+              })
+              .on("mouseout", function () {
+                d3.select(this).classed("highlight", false);
+                d3.select("#tooltip").style("visibility", "hidden");
+              });
+          });
+      }
+
+      // Initialize graph with default limit
+      renderGraph(50);
+
+      // Handle node limit
+      document.getElementById("apply-limit").addEventListener("click", () => {
+        const limit = parseInt(document.getElementById("node-limit").value, 10);
+        renderGraph(limit);
+      });
+
+      // Zoom controls
+      document.getElementById("zoom-in").addEventListener("click", () => {
+        svg.transition().call(zoom.scaleBy, 1.2);
+      });
+
+      document.getElementById("zoom-out").addEventListener("click", () => {
+        svg.transition().call(zoom.scaleBy, 0.8);
+      });
+
+      document.getElementById("reset-view").addEventListener("click", () => {
+        svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity);
+      });
+    </script>
+  </body>
+</html>
