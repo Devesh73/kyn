@@ -12,14 +12,12 @@ const MultiFactor = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://sih24-node-backend.onrender.com/verify",
-        {
-          token: pin,
-        }
+        "http://localhost:3000/verify", // Replace with your backend URL
+        { token: pin }
       );
       if (response.data.verified) {
         setResultMessage("Code verified successfully!");
-        navigate("/chatbot");
+        navigate("/dashboard"); // Redirect to your chatbot page
       } else {
         setResultMessage("Invalid code! Please try again.");
       }
@@ -34,14 +32,19 @@ const MultiFactor = () => {
       <div className="flex w-[900px] h-[500px] rounded-lg overflow-hidden shadow-lg">
         {/* Left Side */}
         <div className="w-1/2 bg-gradient-to-br from-purple-500 to-purple-600 flex flex-col items-center justify-center p-8">
-          <h1 className="text-3xl font-bold text-white">Two Factor Authentication</h1>
+          <h1 className="text-3xl font-bold text-white">
+            Two Factor Authentication
+          </h1>
         </div>
 
         {/* Right Side */}
         <div className="w-1/2 bg-purple-100 p-8 flex flex-col justify-center">
-          <h2 className="text-2xl text-purple-600 font-semibold mb-4">Google OAuth</h2>
+          <h2 className="text-2xl text-purple-600 font-semibold mb-4">
+            Google OAuth
+          </h2>
           <p className="text-purple-700 mb-6">
-            Open your Google Authenticator app to retrieve the verification code.
+            Open your Google Authenticator app to retrieve the verification
+            code.
           </p>
           <form onSubmit={handleSubmit} className="flex flex-col">
             <label htmlFor="authCode" className="text-purple-700 mb-2">
@@ -54,7 +57,7 @@ const MultiFactor = () => {
               inputMode="number"
               onChange={(value) => setPin(value)}
               inputStyle={{
-                borderColor: "#9b4dca",  // Purple border color
+                borderColor: "#9b4dca", // Purple border color
                 borderRadius: "8px",
                 backgroundColor: "#f3f4f6", // Light background
                 color: "#4b4b4b", // Dark text
