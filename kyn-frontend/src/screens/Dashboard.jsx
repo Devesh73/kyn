@@ -1,5 +1,6 @@
 import React from "react";
 import VisualizationCard from "../components/VisualizationCard"; // Import the VisualizationCard component
+import Card from "../components/Card"; // Import the Card component
 
 const Dashboard = () => {
   const data = [
@@ -21,22 +22,11 @@ const Dashboard = () => {
           <section className="col-span-1 lg:col-span-2 bg-white shadow-md rounded-lg p-4">
             <h2 className="text-xl font-semibold mb-4">Behavioral Insights</h2>
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-purple-100 p-4 rounded-lg text-center">
-                <p className="text-sm font-medium">Active Users</p>
-                <h3 className="text-2xl font-bold">1,245</h3>
-              </div>
-              <div className="bg-purple-100 p-4 rounded-lg text-center">
-                <p className="text-sm font-medium">Engagement Rate</p>
-                <h3 className="text-2xl font-bold">87%</h3>
-              </div>
-              <div className="bg-purple-100 p-4 rounded-lg text-center">
-                <p className="text-sm font-medium">Post Frequency</p>
-                <h3 className="text-2xl font-bold">32/day</h3>
-              </div>
-              <div className="bg-purple-100 p-4 rounded-lg text-center">
-                <p className="text-sm font-medium">Sentiment Score</p>
-                <h3 className="text-2xl font-bold">76%</h3>
-              </div>
+              {/* Reuse Card component */}
+              <Card title="Active Users" value="1,245" percentageChange="10" />
+              <Card title="Engagement Rate" value="87%" percentageChange="5" />
+              <Card title="Post Frequency" value="32/day" percentageChange="-3" />
+              <Card title="Sentiment Score" value="76%" percentageChange="2" />
             </div>
           </section>
 
