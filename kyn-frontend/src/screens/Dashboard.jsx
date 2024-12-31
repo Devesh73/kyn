@@ -1,6 +1,7 @@
 import React from "react";
 import VisualizationCard from "../components/VisualizationCard"; // Import the VisualizationCard component
 import Card from "../components/Card"; // Import the Card component
+import ChatBotContainer from "../components/ChatBotContainer";
 
 const Dashboard = () => {
   const data = [
@@ -40,7 +41,7 @@ const Dashboard = () => {
             </div>
           </section>
         </div>
-
+        <ChatBotContainer/>
         {/* Visualization Card for Graph */}
         <div className="mt-6">
           <VisualizationCard title="User Engagement Over Time" data={data} />

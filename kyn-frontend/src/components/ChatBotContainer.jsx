@@ -1,21 +1,42 @@
 import React, { useState } from 'react';
 import { FiPlus, FiSend } from 'react-icons/fi'; // Icons for plus and send
+import ReactMarkdown from 'react-markdown'; // Library for rendering Markdown
 
 const ChatBotContainer = () => {
   const [messages, setMessages] = useState([
-    { text: 'Hello, How are you?', sender: 'bot' },
-    { text: "I'm good, thanks for asking! How about you?", sender: 'user' },
+    { text: 'Hello, **How are you?**', sender: 'bot' },
   ]);
   const [input, setInput] = useState('');
 
-  const handleSend = (e) => {
+  const handleSend = async (e) => {
     e.preventDefault();
     if (input.trim()) {
       setMessages((prevMessages) => [
         ...prevMessages,
         { text: input, sender: 'user' },
-        { text: `Echo: ${input}`, sender: 'bot' },
       ]);
+
+      try {
+        const response = await fetch('http://127.0.0.1:5000/api/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ message: input }),
+        });
+        const data = await response.json();
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { text: data.response, sender: 'bot' },
+        ]);
+      } catch (error) {
+        console.error('Error communicating with chatbot API:', error);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { text: 'Sorry, something went wrong.', sender: 'bot' },
+        ]);
+      }
+
       setInput('');
     }
   };
@@ -40,7 +61,12 @@ const ChatBotContainer = () => {
                 : 'bg-purple-600 text-white self-end'
             }`}
           >
-            {message.text}
+            {/* Render Markdown for bot messages */}
+            {message.sender === 'bot' ? (
+              <ReactMarkdown>{message.text}</ReactMarkdown>
+            ) : (
+              message.text
+            )}
           </div>
         ))}
       </div>
@@ -49,14 +75,12 @@ const ChatBotContainer = () => {
         onSubmit={handleSend}
         className="flex items-center bg-purple-100 rounded-full px-4 py-2 shadow-inner border border-purple-200"
       >
-        {/* Plus Icon */}
         <button
           type="button"
           className="text-purple-600 hover:text-purple-800 focus:outline-none"
         >
           <FiPlus size={20} />
         </button>
-        {/* Input Field */}
         <input
           type="text"
           className="flex-1 bg-transparent text-purple-600 placeholder-purple-400 focus:outline-none px-3"
@@ -64,7 +88,6 @@ const ChatBotContainer = () => {
           value={input}
           onChange={(e) => setInput(e.target.value)}
         />
-        {/* Send Icon */}
         <button
           type="submit"
           className="text-purple-600 hover:text-purple-800 focus:outline-none"
