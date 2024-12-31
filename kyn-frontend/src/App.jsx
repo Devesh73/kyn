@@ -12,12 +12,12 @@ function App() {
   return (
     <>
       <Headers />
-      <div className="flex justify-center mt-8">
+      {/* <div className="flex justify-center mt-8">
         <Button onClick={() => alert("Button Clicked!")}>Get Started</Button>
       </div>
       <div className="flex justify-center mt-8">
         <Button2 onClick={() => alert("Button Clicked!")}>Get Started</Button2>
-      </div>
+      </div> */}
       <Dashboard />
       <Footer />
     </>
