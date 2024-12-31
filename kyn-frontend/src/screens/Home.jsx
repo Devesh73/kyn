@@ -11,7 +11,7 @@ const Home = () => {
           to="/login"
           className="inline-block text-lg font-semibold text-purple-700 border-2 border-purple-700 px-6 py-3 rounded-lg transition duration-300 ease-in-out hover:bg-purple-700 hover:text-white"
         >
-          Learn more
+          Login to Dashboard
         </NavLink>
       </div>
       <div className="max-w-[40%]">
