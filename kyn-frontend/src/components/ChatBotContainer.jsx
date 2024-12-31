@@ -42,7 +42,7 @@ const ChatBotContainer = () => {
   };
 
   return (
-    <div className="bg-white text-purple-600 rounded-lg shadow-lg p-4 w-80 h-96 mx-auto mt-10 flex flex-col">
+    <div className="bg-white text-purple-600 rounded-lg shadow-lg p-4 w-full h-full mx-auto mt-10 flex flex-col">
       {/* Header */}
       <div className="flex items-center border-b border-purple-200 pb-2 mb-4">
         <div className="w-12 h-12 rounded-full bg-purple-600 mr-4"></div>
