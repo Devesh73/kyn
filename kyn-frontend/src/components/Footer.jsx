@@ -2,7 +2,12 @@ import React from 'react';
 
 const Footer = () => {
   return (
-    <footer className="bg-purple-700 text-white py-4 mt-8">
+    <footer
+      className="text-white py-4 mt-8"
+      style={{
+        background: 'linear-gradient(to right, #4b0082, #800080, #6a0dad)',
+      }}
+    >
       <div className="container mx-auto text-center px-4">
         <p>&copy; 2024 Social Media Dashboard. All rights reserved.</p>
         <div className="mt-4">
