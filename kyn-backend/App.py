@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 import networkx as nx
 import json
+import time
 import pandas as pd
 from graph_analysis import (
     load_data,
@@ -11,9 +12,55 @@ from graph_analysis import (
     visualize_communities,
     interest_segmentation,
 )
+import google.generativeai as genai
+from dotenv import load_dotenv
+import os
+
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+# Retrieve the API key from the environment variable
+load_dotenv()
+API_KEY = os.getenv("GOOGLE_API_KEY")
+
+# Configure the Gemini SDK with the API key
+genai.configure(api_key=API_KEY)
+
+# Create the generative model
+generation_config = {
+    "temperature": 1,
+    "top_p": 0.95,
+    "top_k": 64,
+    "max_output_tokens": 8192,
+    "response_mime_type": "text/plain",
+}
+
+model = genai.GenerativeModel(
+    model_name="gemini-1.5-flash",
+    generation_config=generation_config,
+)
+
+# Start a new chat session
+chat_session = model.start_chat(history=[])
+
+
+# Function to interact with Gemini API and handle responses
+def get_chatbot_response(user_input):
+    retries = 3
+    delay = 5  # seconds
+
+    for attempt in range(retries):
+        try:
+            response = chat_session.send_message(user_input)
+            return response.text
+        except Exception as e:
+            if "quota" in str(e).lower():
+                time.sleep(delay)
+            else:
+                return "Sorry, there was an error processing your request."
+
+    return "Sorry, the service is currently unavailable. Please try again later."
 
 
 @app.route("/")
@@ -58,21 +105,15 @@ def get_community_insights():
         return jsonify({"error": str(e)}), 500
 
 
-# @app.route("/query", methods=["POST"])
-# def query():
-#     try:
-#         data = request.json
-#         query = data.get('query')
-#         # Process the query using Gemini and return the response
-#         response = process_query_with_gemini(query)
-#         return jsonify({"response": response})
-#     except Exception as e:
-#         return jsonify({"error": str(e)}), 500
+@app.route("/chat", methods=["POST"])
+def chat():
+    data = request.get_json()
+    user_input = data.get("message", "")
+    if not user_input:
+        return jsonify({"error": "Message is required."}), 400
+    response = get_chatbot_response(user_input)
+    return jsonify({"response": response})
 
-# def process_query_with_gemini(query):
-#     # Implement the logic to process the query using Gemini
-#     # This is a placeholder function
-#     return "Processed query: " + query
 
 if __name__ == "__main__":
     app.run(debug=True)
