@@ -5,7 +5,18 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}"
   ],
   theme: {
-    extend: {},
+    extend: {
+      // Add custom scrollbar styles here
+      scrollbar: {
+        DEFAULT: {
+          track: "bg-purple-100",
+          thumb: "bg-purple-600",
+          size: "thin",
+        },
+      },
+    },
   },
-  plugins: [],
+  plugins: [
+    require('tailwind-scrollbar'),
+  ],
 };

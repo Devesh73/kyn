@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import  Button  from './components/Button'
 import Dashboard from './screens/Dashboard'
 import Button2 from './components/Button2'
+import ChatBotContainer from './components/ChatBotContainer'
 
 function App() {
   
