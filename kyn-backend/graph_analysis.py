@@ -10,7 +10,8 @@ from collections import Counter
 import ast
 
 # Paths to data files
-DATA_DIR = "kyn-backend/data"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data")
 USERS_FILE = os.path.join(DATA_DIR, "neo4j_users.json")
 INTERACTIONS_FILE = os.path.join(DATA_DIR, "neo4j_interactions.json")
 GROUPS_FILE = os.path.join(DATA_DIR, "neo4j_groups.json")

@@ -1,104 +1,95 @@
 from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
+import os
 import networkx as nx
 import json
-import time
 import pandas as pd
 from graph_analysis import (
     load_data,
+    preprocess_interactions,
     create_graph,
     detect_communities,
     advanced_community_analysis,
     visualize_communities,
     interest_segmentation,
 )
-import google.generativeai as genai
-from dotenv import load_dotenv
-import os
-
+from chatbot import get_chatbot_response
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
 
-# Retrieve the API key from the environment variable
-load_dotenv()
-API_KEY = os.getenv("GOOGLE_API_KEY")
-
-# Configure the Gemini SDK with the API key
-genai.configure(api_key=API_KEY)
-
-# Create the generative model
-generation_config = {
-    "temperature": 1,
-    "top_p": 0.95,
-    "top_k": 64,
-    "max_output_tokens": 8192,
-    "response_mime_type": "text/plain",
-}
-
-model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash",
-    generation_config=generation_config,
-)
-
-# Start a new chat session
-chat_session = model.start_chat(history=[])
-
-
-# Function to interact with Gemini API and handle responses
-def get_chatbot_response(user_input):
-    retries = 3
-    delay = 5  # seconds
-
-    for attempt in range(retries):
-        try:
-            response = chat_session.send_message(user_input)
-            return response.text
-        except Exception as e:
-            if "quota" in str(e).lower():
-                time.sleep(delay)
-            else:
-                return "Sorry, there was an error processing your request."
-
-    return "Sorry, the service is currently unavailable. Please try again later."
+# Global variables for caching data to avoid reloading repeatedly
+users_df, interactions_df, groups_df = None, None, None
+G = None
+communities = None
 
 
 @app.route("/")
 def index():
+    """Render the homepage (optional)."""
     return render_template("index.html")
 
 
-@app.route("/community-groups", methods=["GET"])
-def get_community_groups():
+@app.route("/load-data", methods=["POST"])
+def initialize_data():
+    """Load and preprocess data for analysis."""
+    global users_df, interactions_df, groups_df, G, communities
     try:
-        users_df, interactions_df, _ = load_data()
+        # Load data and preprocess
+        users_df, interactions_df, groups_df = load_data()
+        interactions_df = preprocess_interactions(interactions_df)
         G = create_graph(users_df, interactions_df)
         communities = detect_communities(G)
+        advanced_community_analysis(G, communities)  # Save insights
 
-        # Convert frozenset to list
-        communities_list = [list(community) for community in communities]
-
-        analysis_results = advanced_community_analysis(G, communities)
-        return jsonify({"communities": communities_list, "analysis": analysis_results})
+        # Return success message
+        return jsonify({"message": "Data loaded and analyzed successfully."})
+    except FileNotFoundError as e:
+        return jsonify({"error": f"File not found: {e.filename}. Check the path."}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
 @app.route("/graph", methods=["GET"])
 def get_graph():
+    """Return graph data in JSON format."""
+    global G
     try:
-        users_df, interactions_df, _ = load_data()
-        G = create_graph(users_df, interactions_df)
+        if G is None:
+            return jsonify({"error": "Graph not initialized. Load data first."}), 400
         graph_data = nx.node_link_data(G)
         return jsonify(graph_data)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/communities", methods=["GET"])
+def get_communities():
+    """Return detected communities."""
+    global communities
+    try:
+        if communities is None:
+            return jsonify({"error": "Communities not detected. Load data first."}), 400
+        # Convert frozenset to list for JSON serialization
+        communities_list = [list(community) for community in communities]
+        return jsonify({"communities": communities_list})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/community-insights", methods=["GET"])
 def get_community_insights():
+    """Return community insights."""
     try:
-        with open("kyn-backend/data/community_insights.json", "r") as f:
+        insights_file = os.path.join("data", "community_insights.json")
+        if not os.path.exists(insights_file):
+            return (
+                jsonify(
+                    {"error": "Community insights file not found. Load data first."}
+                ),
+                400,
+            )
+        with open(insights_file, "r") as f:
             community_insights = json.load(f)
         return jsonify(community_insights)
     except Exception as e:
@@ -107,6 +98,7 @@ def get_community_insights():
 
 @app.route("/chat", methods=["POST"])
 def chat():
+    """Chatbot endpoint for interacting with users."""
     data = request.get_json()
     user_input = data.get("message", "")
     if not user_input:
