@@ -17,7 +17,7 @@ const Login = () => {
     try {
       await signInWithEmailAndPassword(auth, email, password);
       console.log("Login successful");
-      navigate("/Multifactor");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Login failed");
     }
