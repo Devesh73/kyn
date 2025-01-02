@@ -6,6 +6,7 @@ import Dashboard from './screens/Dashboard';
 import Login from './screens/Login';
 import MultiFactor from './screens/Multifactor';
 import Home from './screens/Home';
+import Users from './screens/Users';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/Multifactor" element={<MultiFactor />} />
+        <Route path="/users" element={<Users />} />
       </Routes>
       <Footer />
     </Router>

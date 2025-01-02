@@ -1,10 +1,15 @@
-import React from "react";
-import VisualizationCard from "../components/VisualizationCard"; // Import the VisualizationCard component
-import Card from "../components/Card"; // Import the Card component
+import React, { useEffect, useState } from "react";
+import VisualizationCard from "../components/VisualizationCard";
+import Card from "../components/Card";
 import ChatBotContainer from "../components/ChatBotContainer";
-import GraphVisualization from "../components/GraphVisualization"; // Import the Neo4j Graph component
+import GraphVisualization from "../components/GraphVisualization";
 
 const Dashboard = () => {
+  const [loading, setLoading] = useState(true); // Manage loading state
+  const [dataLoaded, setDataLoaded] = useState(false); // To track if data is successfully loaded
+  const [apiData, setApiData] = useState(null); // Store data from APIs
+
+  // Sample line chart data
   const lineChartData = [
     { name: "Page A", uv: 4000, pv: 2400 },
     { name: "Page B", uv: 3000, pv: 1398 },
@@ -15,45 +20,107 @@ const Dashboard = () => {
     { name: "Page G", uv: 3490, pv: 4300 },
   ];
 
+  useEffect(() => {
+    // Function to load all data
+    const loadData = async () => {
+      try {
+        const loadDataResponse = await fetch("/api/load-data");
+        if (!loadDataResponse.ok) {
+          throw new Error(`Error: ${loadDataResponse.statusText}`);
+        }
+        const graphMetricsResponse = await fetch("/api/graph-metrics");
+        if (!graphMetricsResponse.ok) {
+          throw new Error(`Error: ${graphMetricsResponse.statusText}`);
+        }
+        const communityInsightsResponse = await fetch("/api/community-insights");
+        if (!communityInsightsResponse.ok) {
+          throw new Error(`Error: ${communityInsightsResponse.statusText}`);
+        }
+    
+        // Process the response if everything is successful
+        const loadData = await loadDataResponse.json();
+        const graphMetrics = await graphMetricsResponse.json();
+        const communityInsights = await communityInsightsResponse.json();
+    
+        // Set the data to state
+        setApiData({ loadData, graphMetrics, communityInsights });
+        setLoading(false);
+        setDataLoaded(true);
+
+        // Hide the success message after 5 seconds
+        setTimeout(() => setDataLoaded(false), 5000);
+
+        // Add event listener to hide message on click
+        const handleClick = () => setDataLoaded(false);
+        document.addEventListener("click", handleClick);
+
+        // Cleanup the event listener
+        return () => {
+          document.removeEventListener("click", handleClick);
+        };
+      } catch (error) {
+        console.error("Error loading data:", error);
+        setLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []);
+
   return (
     <div className="min-h-screen bg-purple-50 text-purple-900">
+      {/* Loading Popup */}
+      {loading && (
+        <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-10">
+          <div className="bg-white p-6 rounded-lg text-center">
+            <h2>Loading Data...</h2>
+            <p>Please wait while we load the data.</p>
+          </div>
+        </div>
+      )}
+
+      {/* Data Loaded Popup */}
+      {dataLoaded && !loading && (
+        <div className="fixed inset-0 flex justify-center items-center bg-green-500 bg-opacity-75 z-10">
+          <div className="bg-white p-6 rounded-lg text-center">
+            <h2 className="text-green-700">Data Loaded Successfully!</h2>
+            <p>The data has been loaded and is now available on the dashboard.</p>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <div className="container mx-auto p-6">
         {/* Top Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Neo4j Graph Visualization */}
           <div className="bg-white shadow-md rounded-lg p-4">
             <GraphVisualization />
           </div>
-
-          {/* ChatBot Container */}
-          <div className="bg-white shadow-md rounded-lg flex flex-col h-[535px]"> {/* Fixed height for chatbot */}
+          <div className="bg-white shadow-md rounded-lg flex flex-col h-[535px]">
             <ChatBotContainer />
           </div>
         </div>
 
         {/* Middle Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          {/* Behavioral Insights Section */}
           <section className="col-span-1 lg:col-span-2 bg-white shadow-md rounded-lg p-4">
             <h2 className="text-xl font-semibold mb-4">Behavioral Insights</h2>
             <div className="grid grid-cols-2 gap-4">
-              <Card title="Active Users" value="1,245" percentageChange="10" />
-              <Card title="Engagement Rate" value="87%" percentageChange="5" />
-              <Card title="Post Frequency" value="32/day" percentageChange="-3" />
-              <Card title="Sentiment Score" value="76%" percentageChange="2" />
+              {/* Add dynamic data here if available */}
+              <Card title="Active Users" value={apiData?.loadData?.activeUsers || "N/A"} />
+              <Card title="Engagement Rate" value={apiData?.graphMetrics?.engagementRate || "N/A"} />
+              <Card title="Post Frequency" value={apiData?.communityInsights?.postFrequency || "N/A"} />
+              <Card title="Sentiment Score" value={apiData?.communityInsights?.sentimentScore || "N/A"} />
             </div>
           </section>
-
-          {/* User Engagement Graph */}
           <div className="bg-white shadow-md rounded-lg p-4">
             <VisualizationCard title="User Engagement Over Time" data={lineChartData} />
           </div>
         </div>
 
-        {/* Bottom Section: Line Chart and Detailed Analytics */}
+        {/* Bottom Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Detailed Analytics or Other Content */}
+          {/* Other content */}
         </div>
       </div>
     </div>
