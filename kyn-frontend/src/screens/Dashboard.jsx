@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 import VisualizationCard from "../components/VisualizationCard";
 import Card from "../components/Card";
 import ChatBotContainer from "../components/ChatBotContainer";
 import GraphVisualization from "../components/GraphVisualization";
-
+import GraphMetricsCard from "../components/Dashboard/GraphMetricsCard";
+import CommunityInsightsCard from "../components/Dashboard/CommunityInsightsCard";
+import UserInteractionsCard from "../components/Dashboard/UserInteractionsCard"; // Assuming you've already created this component
+import InfluenceAnalysisCard from "../components/InfluenceAnalysisCard"; // Make sure to import the new card
+import TrendingInterestsCard from "../components/TrendingInterestsCard";
+import InteractionTrends from "../components/InteractionTrends";
+import ActiveCommunities from "../components/ActiveCommunities";
+import GeographicInsights from "../components/GeographicInsights";
+import FullGraphComponent from "../components/FullGraphComponent";
+import GraphVisualizationComponent from "../components/GraphVisualizationComponent";
 const Dashboard = () => {
-  const [loading, setLoading] = useState(true); // Manage loading state
-  const [dataLoaded, setDataLoaded] = useState(false); // To track if data is successfully loaded
-  const [apiData, setApiData] = useState(null); // Store data from APIs
+  const [loading, setLoading] = useState(true); 
+  const [dataLoaded, setDataLoaded] = useState(false); 
+  const [apiData, setApiData] = useState(null); 
+  const [userId, setUserId] = useState(""); // State for user ID input
+  const [userInteractions, setUserInteractions] = useState(null); // Store user interactions data
+  const [interactionsLoading, setInteractionsLoading] = useState(false); // Loading state for interactions
 
   // Sample line chart data
   const lineChartData = [
@@ -19,6 +32,29 @@ const Dashboard = () => {
     { name: "Page F", uv: 2390, pv: 3800 },
     { name: "Page G", uv: 3490, pv: 4300 },
   ];
+
+  const fetchUserInteractions = async (userId) => {
+    setInteractionsLoading(true);
+    try {
+      const response = await axios.get(`/api/user-interactions/${userId}`);
+      setUserInteractions(response.data.interactions);
+    } catch (error) {
+      console.error("Error fetching user interactions:", error);
+      setUserInteractions(null);
+    } finally {
+      setInteractionsLoading(false);
+    }
+  };
+
+  const handleUserIdChange = (e) => {
+    setUserId(e.target.value);
+  };
+
+  const handleSearch = () => {
+    if (userId) {
+      fetchUserInteractions(userId);
+    }
+  };
 
   useEffect(() => {
     // Function to load all data
@@ -37,27 +73,18 @@ const Dashboard = () => {
           throw new Error(`Error: ${communityInsightsResponse.statusText}`);
         }
     
-        // Process the response if everything is successful
         const loadData = await loadDataResponse.json();
         const graphMetrics = await graphMetricsResponse.json();
         const communityInsights = await communityInsightsResponse.json();
     
-        // Set the data to state
         setApiData({ loadData, graphMetrics, communityInsights });
         setLoading(false);
         setDataLoaded(true);
 
-        // Hide the success message after 5 seconds
         setTimeout(() => setDataLoaded(false), 5000);
-
-        // Add event listener to hide message on click
         const handleClick = () => setDataLoaded(false);
         document.addEventListener("click", handleClick);
-
-        // Cleanup the event listener
-        return () => {
-          document.removeEventListener("click", handleClick);
-        };
+        return () => document.removeEventListener("click", handleClick);
       } catch (error) {
         console.error("Error loading data:", error);
         setLoading(false);
@@ -91,7 +118,42 @@ const Dashboard = () => {
 
       {/* Main Content */}
       <div className="container mx-auto p-6">
-        {/* Top Section */}
+        {/* Search Section */}
+        <div className="mb-6">
+          <div className="flex items-center gap-4">
+            <input
+              type="text"
+              value={userId}
+              onChange={handleUserIdChange}
+              placeholder="Enter User ID for userinteraction"
+              className="p-2 border rounded-lg w-60"
+            />
+            <button
+              onClick={handleSearch}
+              className="bg-purple-600 text-white p-2 rounded-lg"
+            >
+              Search
+            </button>
+          </div>
+        </div>
+
+        {/* User Interactions Section */}
+        {userInteractions && (
+          <div className="mb-6">
+            <UserInteractionsCard userId={userId} interactions={userInteractions} loading={interactionsLoading} />
+          </div>
+        )}
+
+        {/* Influence Analysis Section */}
+        <div className="mb-6">
+          <InfluenceAnalysisCard /> {/* Adding InfluenceAnalysisCard below user interactions */}
+        </div>
+        
+        <div className="mb-6">
+          <TrendingInterestsCard /> {/* Add the TrendingInterestsCard here */}
+        </div>
+
+        {/* Other Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <div className="bg-white shadow-md rounded-lg p-4">
             <GraphVisualization />
@@ -119,9 +181,25 @@ const Dashboard = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-          {/* Other content */}
+        <div className="p-6 space-y-6">
+          <GraphMetricsCard />
         </div>
+        <div className="p-6">
+          <CommunityInsightsCard />
+        </div>
+        <div className="p-6">
+          <InteractionTrends />
+        </div>
+        <div className="p-6">
+          <ActiveCommunities />
+        </div>
+        <div className="p-6">
+          <GeographicInsights />
+        </div>
+        <div className="p-6">
+          <FullGraphComponent />
+        </div>
+        
       </div>
     </div>
   );
