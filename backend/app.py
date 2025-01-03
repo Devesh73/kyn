@@ -1,14 +1,17 @@
 import json
-import networkx as nx # type: ignore
-from networkx.readwrite import json_graph # type: ignore
+import networkx as nx  # type: ignore
+from networkx.readwrite import json_graph  # type: ignore
 from community_detection import detect_communities, analyze_centrality
 from graph_operations import calculate_graph_metrics
 import os
 from flask import Flask, jsonify, request
 from flask import send_file
 import matplotlib.pyplot as plt
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut
 from chatbot import get_chatbot_response
 from flask_cors import CORS
+import random
 
 
 # Get the absolute path to the data files
@@ -16,6 +19,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "data/users.json")
 INTERACTIONS_FILE = os.path.join(BASE_DIR, "data/interactions.json")
 app = Flask(__name__)
+geolocator = Nominatim(user_agent="geo_insights_app")
 CORS(app)  # Enable CORS for all routes
 
 
@@ -357,11 +361,44 @@ def geographic_insights():
     try:
         graph = build_graph_from_files()
         location_groups = {}
+        location_coordinates = {}
+
+        def get_coordinates_from_location(location):
+            """Fetch coordinates for a location using geopy."""
+            try:
+                location_data = geolocator.geocode(location, timeout=10)
+                if location_data:
+                    return [
+                        round(location_data.latitude, 6),
+                        round(location_data.longitude, 6),
+                    ]
+            except GeocoderTimedOut:
+                pass
+
+            return [
+                round(random.uniform(-90, 90), 6),
+                round(random.uniform(-180, 180), 6),
+            ]
+
         for node, data in graph.nodes(data=True):
             location = data.get("location")
             if location:
+                # Group nodes by location
                 location_groups.setdefault(location, []).append(node)
-        return jsonify(location_groups)
+                # Fetch coordinates for the location if not already fetched
+                if location not in location_coordinates:
+                    location_coordinates[location] = get_coordinates_from_location(
+                        location
+                    )
+
+        # Attach coordinates to the response
+        response = {
+            "locationGroups": location_groups,
+            "locationCoordinates": location_coordinates,
+        }
+
+        return jsonify(response)
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -472,6 +509,7 @@ def chat():
     response = get_chatbot_response(user_input)
     return jsonify({"response": response})
 
+
 @app.route("/api/users", methods=["GET"])
 def get_users():
     """
@@ -482,6 +520,7 @@ def get_users():
         return jsonify({"users": users})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)
