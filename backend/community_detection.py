@@ -1,7 +1,7 @@
 import os
 import json
-import networkx as nx
-from networkx.algorithms.community import greedy_modularity_communities
+import networkx as nx # type: ignore
+from networkx.algorithms.community import greedy_modularity_communities # type: ignore
 import matplotlib.pyplot as plt
 
 # Paths to data files

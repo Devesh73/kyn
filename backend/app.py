@@ -1,6 +1,6 @@
 import json
-import networkx as nx
-from networkx.readwrite import json_graph
+import networkx as nx # type: ignore
+from networkx.readwrite import json_graph # type: ignore
 from community_detection import detect_communities, analyze_centrality
 from graph_operations import calculate_graph_metrics
 import os
@@ -88,18 +88,14 @@ def build_graph_from_files(users_file=USERS_FILE, interactions_file=INTERACTIONS
 @app.route("/api/load-data", methods=["GET"])
 def load_data():
     """
-    Fetch social media data from JSON files.
+    Fetch social media data from JSON files, but only return a success message.
     """
     try:
-        users = load_data_from_file(USERS_FILE).get("users", [])
-        interactions = load_data_from_file(INTERACTIONS_FILE).get("interactions", [])
-        return jsonify(
-            {
-                "message": "Data loaded from JSON files successfully.",
-                "users": users,
-                "interactions": interactions,
-            }
-        )
+        # Load the users data but don't return the interactions
+        load_data_from_file(USERS_FILE).get("users", [])
+        load_data_from_file(INTERACTIONS_FILE).get("interactions", [])
+
+        return jsonify({"message": "Data loaded successfully."})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -474,6 +470,16 @@ def chat():
     response = get_chatbot_response(user_input)
     return jsonify({"response": response})
 
+@app.route("/api/users", methods=["GET"])
+def get_users():
+    """
+    Endpoint to fetch the list of all users.
+    """
+    try:
+        users = load_data_from_file(USERS_FILE).get("users", [])
+        return jsonify({"users": users})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

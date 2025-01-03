@@ -1,6 +1,6 @@
 import time
-import pandas as pd
-import google.generativeai as genai
+import pandas as pd # type: ignore
+import google.generativeai as genai # type: ignore
 from dotenv import load_dotenv
 import os
 
