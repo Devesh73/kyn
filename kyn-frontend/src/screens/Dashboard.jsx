@@ -6,26 +6,25 @@ import ChatBotContainer from "../components/ChatBotContainer";
 import GraphVisualization from "../components/GraphVisualization";
 import GraphMetricsCard from "../components/Dashboard/GraphMetricsCard";
 import CommunityInsightsCard from "../components/Dashboard/CommunityInsightsCard";
-import UserInteractionsCard from "../components/Dashboard/UserInteractionsCard"; // Assuming you've already created this component
-import InfluenceAnalysisCard from "../components/InfluenceAnalysisCard"; // Make sure to import the new card
+import UserInteractionsCard from "../components/Dashboard/UserInteractionsCard";
+import InfluenceAnalysisCard from "../components/InfluenceAnalysisCard";
 import TrendingInterestsCard from "../components/TrendingInterestsCard";
 import InteractionTrends from "../components/InteractionTrends";
 import ActiveCommunities from "../components/ActiveCommunities";
 import GeographicInsights from "../components/GeographicInsights";
 import FullGraphComponent from "../components/FullGraphComponent";
-import GraphVisualizationComponent from "../components/GraphVisualizationComponent";
 import SearchBar from "../components/Dashboard/SearchBar";
-
+import UsersList from "../components/UserList";
 
 const Dashboard = () => {
-  const [loading, setLoading] = useState(true); 
-  const [dataLoaded, setDataLoaded] = useState(false); 
-  const [apiData, setApiData] = useState(null); 
-  const [userId, setUserId] = useState(""); // State for user ID input
-  const [userInteractions, setUserInteractions] = useState(null); // Store user interactions data
-  const [interactionsLoading, setInteractionsLoading] = useState(false); // Loading state for interactions
+  const [loading, setLoading] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
+  const [apiData, setApiData] = useState(null);
+  const [userId, setUserId] = useState("");
+  const [userInteractions, setUserInteractions] = useState(null);
+  const [interactionsLoading, setInteractionsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  // Sample line chart data
   const lineChartData = [
     { name: "Page A", uv: 4000, pv: 2400 },
     { name: "Page B", uv: 3000, pv: 1398 },
@@ -53,53 +52,46 @@ const Dashboard = () => {
     setUserId(e.target.value);
   };
 
-  const handleSearch = () => {
-    if (userId) {
-      fetchUserInteractions(userId);
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchQuery) {
+      fetchUserInteractions(searchQuery);
+    }
+  };
+
+  const loadDataFromApi = async () => {
+    try {
+      const [loadDataResponse, graphMetricsResponse, communityInsightsResponse] = await Promise.all([
+        axios.get("/api/load-data"),
+        axios.get("/api/graph-metrics"),
+        axios.get("/api/community-insights"),
+      ]);
+
+      const apiData = {
+        loadData: loadDataResponse.data,
+        graphMetrics: graphMetricsResponse.data,
+        communityInsights: communityInsightsResponse.data,
+      };
+
+      localStorage.setItem("dashboardData", JSON.stringify(apiData));
+      setApiData(apiData);
+    } catch (error) {
+      console.error("Error loading data from API:", error);
     }
   };
 
   useEffect(() => {
-    // Function to load all data
-    const loadData = async () => {
-      try {
-        const loadDataResponse = await fetch("/api/load-data");
-        if (!loadDataResponse.ok) {
-          throw new Error(`Error: ${loadDataResponse.statusText}`);
-        }
-        const graphMetricsResponse = await fetch("/api/graph-metrics");
-        if (!graphMetricsResponse.ok) {
-          throw new Error(`Error: ${graphMetricsResponse.statusText}`);
-        }
-        const communityInsightsResponse = await fetch("/api/community-insights");
-        if (!communityInsightsResponse.ok) {
-          throw new Error(`Error: ${communityInsightsResponse.statusText}`);
-        }
-    
-        const loadData = await loadDataResponse.json();
-        const graphMetrics = await graphMetricsResponse.json();
-        const communityInsights = await communityInsightsResponse.json();
-    
-        setApiData({ loadData, graphMetrics, communityInsights });
-        setLoading(false);
-        setDataLoaded(true);
-
-        setTimeout(() => setDataLoaded(false), 5000);
-        const handleClick = () => setDataLoaded(false);
-        document.addEventListener("click", handleClick);
-        return () => document.removeEventListener("click", handleClick);
-      } catch (error) {
-        console.error("Error loading data:", error);
-        setLoading(false);
-      }
-    };
-    
-    loadData();
+    const cachedData = localStorage.getItem("dashboardData");
+    if (cachedData) {
+      setApiData(JSON.parse(cachedData));
+      setLoading(false);
+    } else {
+      loadDataFromApi().finally(() => setLoading(false));
+    }
   }, []);
 
   return (
     <div className="min-h-screen bg-purple-50 text-purple-900">
-      {/* Loading Popup */}
       {loading && (
         <div className="fixed inset-0 flex justify-center items-center bg-black bg-opacity-50 z-10">
           <div className="bg-white p-6 rounded-lg text-center">
@@ -109,7 +101,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Data Loaded Popup */}
       {dataLoaded && !loading && (
         <div className="fixed inset-0 flex justify-center items-center bg-green-500 bg-opacity-75 z-10">
           <div className="bg-white p-6 rounded-lg text-center">
@@ -119,9 +110,28 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Main Content */}
+      <div className="w-full lg:w-1/3 bg-white shadow-lg rounded-lg overflow-y-auto p-4">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Users List</h2>
+        <form onSubmit={handleSearch} className="mb-4">
+          <input
+            type="text"
+            className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none"
+            placeholder="Search by User ID"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button
+            type="submit"
+            className="mt-2 w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition"
+            disabled={loading}
+          >
+            {loading ? "Searching..." : "Search"}
+          </button>
+        </form>
+        <UsersList users={[]} onSelectUser={() => {}} />
+      </div>
+
       <div className="container mx-auto p-6">
-        {/* Search Section */}
         <div className="mb-6">
           <SearchBar
             userId={userId}
@@ -130,23 +140,19 @@ const Dashboard = () => {
           />
         </div>
 
-        {/* User Interactions Section */}
         {userInteractions && (
           <div className="mb-6">
             <UserInteractionsCard userId={userId} interactions={userInteractions} loading={interactionsLoading} />
           </div>
         )}
 
-        {/* Influence Analysis Section */}
         <div className="mb-6">
-          <InfluenceAnalysisCard /> {/* Adding InfluenceAnalysisCard below user interactions */}
+          <InfluenceAnalysisCard />
         </div>
-        
         <div className="mb-6">
-          <TrendingInterestsCard /> {/* Add the TrendingInterestsCard here */}
+          <TrendingInterestsCard />
         </div>
 
-        {/* Other Sections */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
           <div className="bg-white shadow-md rounded-lg p-4">
             <GraphVisualization />
@@ -156,12 +162,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Middle Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
           <section className="col-span-1 lg:col-span-2 bg-white shadow-md rounded-lg p-4">
             <h2 className="text-xl font-semibold mb-4">Behavioral Insights</h2>
             <div className="grid grid-cols-2 gap-4">
-              {/* Add dynamic data here if available */}
               <Card title="Active Users" value={apiData?.loadData?.activeUsers || "N/A"} />
               <Card title="Engagement Rate" value={apiData?.graphMetrics?.engagementRate || "N/A"} />
               <Card title="Post Frequency" value={apiData?.communityInsights?.postFrequency || "N/A"} />
@@ -173,7 +177,6 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Bottom Section */}
         <div className="p-6 space-y-6">
           <GraphMetricsCard />
         </div>
@@ -192,7 +195,6 @@ const Dashboard = () => {
         <div className="p-6">
           <FullGraphComponent />
         </div>
-        
       </div>
     </div>
   );
