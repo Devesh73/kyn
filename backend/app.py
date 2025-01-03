@@ -349,9 +349,7 @@ def recommended_communities(user_id):
         recommendations = sorted(
             recommendations, key=lambda x: x["shared_interests"], reverse=True
         )
-        return jsonify(
-            {"user_id": user_id, "recommended_communities": recommendations[:5]}
-        )
+        return jsonify({"user_id": user_id, "recommended_communities": recommendations})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
