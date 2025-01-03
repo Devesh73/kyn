@@ -1,6 +1,6 @@
 import json
-import networkx as nx
-from networkx.readwrite import json_graph
+import networkx as nx # type: ignore
+from networkx.readwrite import json_graph # type: ignore
 from community_detection import detect_communities, analyze_centrality
 from graph_operations import calculate_graph_metrics
 import os
