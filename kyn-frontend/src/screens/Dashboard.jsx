@@ -14,6 +14,9 @@ import ActiveCommunities from "../components/ActiveCommunities";
 import GeographicInsights from "../components/GeographicInsights";
 import FullGraphComponent from "../components/FullGraphComponent";
 import GraphVisualizationComponent from "../components/GraphVisualizationComponent";
+import SearchBar from "../components/Dashboard/SearchBar";
+
+
 const Dashboard = () => {
   const [loading, setLoading] = useState(true); 
   const [dataLoaded, setDataLoaded] = useState(false); 
@@ -120,21 +123,11 @@ const Dashboard = () => {
       <div className="container mx-auto p-6">
         {/* Search Section */}
         <div className="mb-6">
-          <div className="flex items-center gap-4">
-            <input
-              type="text"
-              value={userId}
-              onChange={handleUserIdChange}
-              placeholder="Enter User ID for userinteraction"
-              className="p-2 border rounded-lg w-60"
-            />
-            <button
-              onClick={handleSearch}
-              className="bg-purple-600 text-white p-2 rounded-lg"
-            >
-              Search
-            </button>
-          </div>
+          <SearchBar
+            userId={userId}
+            onUserIdChange={handleUserIdChange}
+            onSearch={handleSearch}
+          />
         </div>
 
         {/* User Interactions Section */}
