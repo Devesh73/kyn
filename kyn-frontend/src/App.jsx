@@ -9,6 +9,7 @@ import Home from './screens/Home';
 import Users from './screens/Users';
 import UserDetails from './components/UserDetails'; // Add this
 import CommunityDetails from './components/CommunityDetails'; // Add this
+import Map from './screens/Map'; // Add this
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Headers />
       <Routes>
         <Route path="" element={<Home />} />
+        <Route path="/map" element={<Map />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/login" element={<Login />} />
         <Route path="/Multifactor" element={<MultiFactor />} />
