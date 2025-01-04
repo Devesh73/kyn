@@ -24,6 +24,17 @@ const UserInfluenceCard = ({ userId }) => {
     }
   }, [userId]);
 
+  const calculateInfluencePercentage = (influence) => {
+    if (!influence) return 0;
+    const { betweenness_centrality, closeness_centrality, degree_centrality } = influence;
+    // Normalize and combine the metrics to get a percentage out of 100
+    const normalizedBetweenness = betweenness_centrality * 100;
+    const normalizedCloseness = closeness_centrality * 100;
+    const normalizedDegree = degree_centrality * 100;
+    const totalInfluence = (normalizedBetweenness + normalizedCloseness + normalizedDegree) / 3;
+    return totalInfluence.toFixed(2);
+  };
+
   if (loading) {
     return <Loader />;
   }
@@ -32,21 +43,20 @@ const UserInfluenceCard = ({ userId }) => {
     return <p className="text-red-600">{error}</p>;
   }
 
+  const influencePercentage = calculateInfluencePercentage(influence);
+
   return (
-    <div className="bg-white p-4 rounded-lg shadow-md w-80 h-64 overflow-y-auto mt-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4">User Influence</h2>
-      <h3 className="text-sm font-semibold mb-4">Influence for User: {userId}</h3>
+    <div className="relative flex flex-col rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 p-6 shadow-2xl h-[380px] w-full md:w-1/2 lg:w-1/3 mx-auto">
+      <h2 className="text-2xl font-semibold text-white mb-4">User Influence</h2>
+      <h3 className="text-sm font-semibold text-white mb-4">Influence for User {userId}</h3>
       
       {influence ? (
-        <ul className="text-sm space-y-2">
-          {Object.entries(influence).map(([metric, value], index) => (
-            <li key={index} className="border-b pb-2">
-              <div><strong>{metric.replace('_', ' ').toUpperCase()}:</strong> {value.toFixed(4)}</div>
-            </li>
-          ))}
-        </ul>
+        <div className="flex mt-10 flex-col items-center">
+          <div className="text-6xl font-bold text-white mb-4">{influencePercentage}%</div>
+          <div className="text-lg font-medium text-white">Overall Influence</div>
+        </div>
       ) : (
-        <p className="text-sm text-gray-600">No influence data available for this user.</p>
+        <p className="text-sm text-gray-200">No influence data available for this user.</p>
       )}
     </div>
   );

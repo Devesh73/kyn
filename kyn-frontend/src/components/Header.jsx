@@ -14,8 +14,8 @@ const Header = () => {
         <nav>
           <ul className="flex space-x-6">
             <li><Link to="/" className="hover:text-gray-200">Home</Link></li>
+            <li><Link to="/dashboard" className="hover:text-gray-200">Dashboard</Link></li>
             <li><Link to="/users" className="hover:text-gray-200">Users</Link></li>
-            <li><Link to="/settings" className="hover:text-gray-200">Settings</Link></li>
           </ul>
         </nav>
       </div>

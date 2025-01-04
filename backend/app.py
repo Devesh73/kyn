@@ -1,6 +1,6 @@
 import json
-import networkx as nx # type: ignore
-from networkx.readwrite import json_graph # type: ignore
+import networkx as nx  # type: ignore
+from networkx.readwrite import json_graph  # type: ignore
 from community_detection import detect_communities, analyze_centrality
 from graph_operations import calculate_graph_metrics
 import os
@@ -9,6 +9,7 @@ from flask import send_file
 import matplotlib.pyplot as plt
 from chatbot import get_chatbot_response
 from flask_cors import CORS
+import random
 
 
 # Get the absolute path to the data files
@@ -17,6 +18,15 @@ USERS_FILE = os.path.join(BASE_DIR, "data/users.json")
 INTERACTIONS_FILE = os.path.join(BASE_DIR, "data/interactions.json")
 app = Flask(__name__)
 CORS(app)  # Enable CORS for all routes
+
+
+def generate_random_coordinates():
+    """
+    Generate random coordinates for latitude and longitude.
+    """
+    latitude = random.uniform(-90, 90)
+    longitude = random.uniform(-180, 180)
+    return {"latitude": latitude, "longitude": longitude}
 
 
 @app.route("/")
@@ -358,7 +368,13 @@ def geographic_insights():
         for node, data in graph.nodes(data=True):
             location = data.get("location")
             if location:
-                location_groups.setdefault(location, []).append(node)
+                if location not in location_groups:
+                    location_groups[location] = {
+                        "users": [],
+                        "coordinates": generate_random_coordinates(),
+                    }
+                location_groups[location]["users"].append(node)
+
         return jsonify(location_groups)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -470,6 +486,7 @@ def chat():
     response = get_chatbot_response(user_input)
     return jsonify({"response": response})
 
+
 @app.route("/api/users", methods=["GET"])
 def get_users():
     """
@@ -480,6 +497,7 @@ def get_users():
         return jsonify({"users": users})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     app.run(debug=True)

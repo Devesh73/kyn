@@ -42,16 +42,10 @@ const ChatBotContainer = () => {
   };
 
   return (
-    <div className="bg-white text-purple-600 rounded-lg shadow-lg p-4 w-full h-full mx-auto mt-10 flex flex-col">
-      {/* Header */}
-      <div className="flex items-center border-b border-purple-200 pb-2 mb-4">
-        <div className="w-12 h-12 rounded-full bg-purple-600 mr-4"></div>
-        <h2 className="text-xl font-bold">Chat</h2>
-      </div>
+    <div className="bg-white text-purple-600 rounded-lg shadow-lg p-4 w-full h-80 mx-auto mt-10 flex flex-col">
+
       {/* Messages */}
-      <div
-        className="flex-1 overflow-y-auto mb-4 space-y-3 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-100 pr-2"
-      >
+      <div className="flex-1 overflow-y-auto mb-4 space-y-3 scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-purple-100 pr-2">
         {messages.map((message, index) => (
           <div
             key={index}

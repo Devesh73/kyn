@@ -5,6 +5,7 @@ import UserCommunityDetails from '../components/User/UserCommunityDetails';
 import UserInfluenceCard from '../components/User/UserInfluenceCard';
 import UserInteractionsCard from '../components/User/UserInteractionsCard';
 import RecommendedConnections from '../components/User/RecommendedConnections';
+import RecommendedCommunities from '../components/User/RecommendedCommunities';
 
 const Users = () => {
   const [users, setUsers] = useState([]); // Stores list of users
@@ -49,54 +50,36 @@ const Users = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tl from-blue-100 to-purple-100 p-6">
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Users List Section */}
-        <div className="w-full lg:w-1/3 bg-white shadow-lg rounded-lg p-4">
-          <h2 className="text-2xl font-bold mb-4">Users List</h2>
-          {/* Search Form */}
-          <form onSubmit={handleSearch} className="mb-4">
-            <input
-              type="text"
-              className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
-              placeholder="Search by User ID"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button
-              type="submit"
-              className="mt-2 w-full bg-purple-500 text-white py-2 rounded-lg hover:bg-purple-600 transition"
-              disabled={loading}
-            >
-              {loading ? 'Searching...' : 'Search'}
-            </button>
-          </form>
-          {/* Render Users List */}
-          <UsersList users={users} onSelectUser={setSelectedUser} />
-        </div>
-
+    <div className="min-h-screen p-6 bg-black flex flex-row gap-6">
+      {/* Users List Section */}
+      <UsersList users={users} onSelectUser={setSelectedUser} />
+      {/* <UserInfluenceCard userId={selectedUser.user_id} />// */}
+      <div className='flex flex-col gap-6 w-full'>
         {/* User Details Section */}
-        <div className="w-full lg:w-2/3 bg-white shadow-lg rounded-lg p-6">
-          {error ? (
-            <div className="text-center text-red-500">{error}</div>
-          ) : selectedUser ? (
-            <>
-              {/* Render User Details and Additional Info */}
-              <UserDetails user={selectedUser} />
-              <UserCommunityDetails community={selectedUser.community} />
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-                <UserInfluenceCard userId={selectedUser.user_id} />
-                <UserInteractionsCard userId={selectedUser.user_id} />
-              </div>
-              <RecommendedConnections userId={selectedUser.user_id} className="mt-4" />
-            </>
-          ) : (
-            <div className="h-full flex items-center justify-center text-gray-500">
-              Select a user to view details or search for a user.
-            </div>
-          )}
+      {selectedUser ? (
+        <>
+          <UserDetails user={selectedUser} />
+          
+          
+          <UserInteractionsCard userId={selectedUser.user_id} />
+
+          <div className="flex flex-row gap-6">
+            <RecommendedConnections userId={selectedUser.user_id}/>
+            <RecommendedCommunities userId={selectedUser.user_id}/>
+            <UserInfluenceCard userId={selectedUser.user_id} />
+          </div>
+
+          <UserCommunityDetails user={selectedUser} />
+
+        </>
+      ) : (
+        <div className="h-full flex items-center justify-center text-gray-500">
+          Select a user to view details or search for a user.
         </div>
+      )}
+
       </div>
+      
     </div>
   );
 };

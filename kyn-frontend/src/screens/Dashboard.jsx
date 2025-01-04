@@ -1,38 +1,47 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import Card from '../components/Card';
-import ChatBotContainer from '../components/Dashboard/ChatBotContainer';
-import InfluenceAnalysisCard from '../components/Dashboard/InfluenceAnalysisCard';
-import TrendingInterestsCard from '../components/Dashboard/TrendingInterestsCard';
-import InteractionTrends from '../components/Dashboard/InteractionTrends';
-import ActiveCommunities from '../components/Dashboard/ActiveCommunities';
-import GeographicInsights from '../components/Dashboard/GeographicInsights';
-import CommunityGraph from '../components/Dashboard/CommunityGraph';
-import FullGraphComponent from '../components/Dashboard/FullGraph';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import ChatBotContainer from "../components/Dashboard/ChatBotContainer";
+import InfluenceAnalysisCard from "../components/Dashboard/InfluenceAnalysisCard";
+import TrendingInterestsCard from "../components/Dashboard/TrendingInterestsCard";
+import InteractionTrends from "../components/Dashboard/InteractionTrends";
+import ActiveCommunities from "../components/Dashboard/ActiveCommunities";
+import GeographicInsights from "../components/Dashboard/GeographicInsights";
+import CommunityGraphComponent from "../components/Dashboard/CommunityGraphComponent";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [apiData, setApiData] = useState(null);
+  const [showChatbot, setShowChatbot] = useState(true);
+  const [chatbotCollapsed, setChatbotCollapsed] = useState(false);
 
   const fetchData = async () => {
     try {
+      const cachedData = localStorage.getItem("dashboardData");
+
+      if (cachedData) {
+        setApiData(JSON.parse(cachedData));
+        setDataLoaded(true);
+        return;
+      }
+
       const [loadDataRes, graphMetricsRes, communityInsightsRes] = await Promise.all([
-        fetch('/api/load-data'),
-        fetch('/api/graph-metrics'),
-        fetch('/api/community-insights'),
+        axios.get("/api/load-data"),
+        axios.get("/api/graph-metrics"),
+        axios.get("/api/community-insights"),
       ]);
 
-      const [loadData, graphMetrics, communityInsights] = await Promise.all([
-        loadDataRes.json(),
-        graphMetricsRes.json(),
-        communityInsightsRes.json(),
-      ]);
+      const loadData = loadDataRes.data;
+      const graphMetrics = graphMetricsRes.data;
+      const communityInsights = communityInsightsRes.data;
 
-      setApiData({ loadData, graphMetrics, communityInsights });
+      const newApiData = { loadData, graphMetrics, communityInsights };
+
+      setApiData(newApiData);
+      localStorage.setItem("dashboardData", JSON.stringify(newApiData));
       setDataLoaded(true);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
@@ -43,70 +52,78 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-800">
-      {/* Loading Overlay */}
+    <div className="min-h-screen bg-black text-gray-800 relative">
+      {/* Loading Pop-Up */}
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded-lg text-center">
-            <h2 className="text-xl font-bold">Loading Data...</h2>
-            <p>Please wait while we load the dashboard data.</p>
+          <div className="bg-white p-6 rounded-lg text-center animate-fade-in-out">
+            <div className="loader"></div>
+            <h2 className="text-xl font-bold mt-2">Loading Data...</h2>
           </div>
         </div>
       )}
 
-      {/* Success Overlay */}
-      {dataLoaded && !loading && (
-        <div className="fixed inset-0 flex items-center justify-center bg-green-500 bg-opacity-75 z-50">
+      {!loading && dataLoaded && (
+        <div
+          className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+          style={{ animation: "fade-out 1s forwards" }}
+          onAnimationEnd={() => setDataLoaded(false)}
+        >
           <div className="bg-white p-6 rounded-lg text-center">
-            <h2 className="text-green-600 text-lg font-bold">Data Loaded Successfully!</h2>
-          </div>
-        </div>
-      )}
-
-      <div className="container mx-auto p-6">
-        {/* Section: Influence Analysis */}
-        <div className="mb-6">
-          <InfluenceAnalysisCard />
-        </div>
-
-        {/* Section: Trending Interests */}
-        <div className="mb-6">
-          <TrendingInterestsCard />
-        </div>
-
-        {/* Section: Graphs */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white shadow rounded-lg p-4">
-            <CommunityGraph />
-          </div>
-          <div className="bg-white shadow rounded-lg flex h-[535px]">
-            <ChatBotContainer />
-          </div>
-        </div>
-
-        {/* Section: Insights */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
-          <div className="col-span-2 bg-white shadow rounded-lg p-4">
-            <h2 className="text-xl font-semibold mb-4">Behavioral Insights</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <Card title="Active Users" value={apiData?.loadData?.activeUsers || 'N/A'} />
-              <Card title="Engagement Rate" value={apiData?.graphMetrics?.engagementRate || 'N/A'} />
-              <Card title="Post Frequency" value={apiData?.communityInsights?.postFrequency || 'N/A'} />
-              <Card title="Sentiment Score" value={apiData?.communityInsights?.sentimentScore || 'N/A'} />
+            <div className="success-checkmark">
+              <div className="check-icon">
+                <span className="line"></span>
+                <span className="line-tip"></span>
+                <span className="line-long"></span>
+              </div>
             </div>
+            <h2 className="text-green-600 text-lg font-bold mt-2">Data Loaded!</h2>
           </div>
         </div>
+      )}
 
-        {/* Section: Trends and Communities */}
-        <div className="mt-6 space-y-6">
-          <InteractionTrends />
+      {/* Dashboard Layout */}
+      <div className="container mx-auto p-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column */}
+        <div className="space-y-6">
+          <InfluenceAnalysisCard />
+          <TrendingInterestsCard />
           <ActiveCommunities />
-          <GeographicInsights />
-          <FullGraphComponent />
         </div>
+
+        {/* Right Column */}
+        <div className="col-span-2 grid grid-rows-2 gap-6">
+            <InteractionTrends />
+            <GeographicInsights />
+        </div>  
+
+        {/* Bottom Row */}
+        <div className="col-span-3 gap-6">
+            <CommunityGraphComponent />
+        </div>
+      </div>
+
+    {/* Collapsible Chatbot */}
+    <div
+        className={`fixed z-100 ${
+          chatbotCollapsed ? "bottom-4 right-4 h-13 w-48" : "bottom-4 right-4 h-[400px] w-[300px]"
+        } bg-gray-800 text-gray-200 shadow-lg rounded-lg overflow-hidden`}
+      >
+        <div className="flex justify-between items-center p-2 bg-gray-700 border-b border-gray-600">
+          <h3 className="text-lg font-bold">
+            {chatbotCollapsed ? "Chatbot" : "Chatbot Expanded"}
+          </h3>
+          <button
+            onClick={() => setChatbotCollapsed(!chatbotCollapsed)}
+            className="text-gray-400 hover:text-gray-200"
+          >
+            {chatbotCollapsed ? "Expand" : "Collapse"}
+          </button>
+        </div>
+        {!chatbotCollapsed && <ChatBotContainer />}
       </div>
     </div>
   );
 };
-
 export default Dashboard;
+

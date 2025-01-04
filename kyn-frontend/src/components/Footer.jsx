@@ -3,7 +3,7 @@ import React from 'react';
 const Footer = () => {
   return (
     <footer
-      className="text-white py-4 mt-8"
+      className="text-white py-4"
       style={{
         background: 'linear-gradient(to right, #4b0082, #800080, #6a0dad)',
       }}

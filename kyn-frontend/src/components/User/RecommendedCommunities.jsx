@@ -1,28 +1,29 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 
-const InfluenceAnalysisCard = () => {
-  const [topInfluencers, setTopInfluencers] = useState([]);
+const RecommendedCommunities = ({ userId }) => {
+  const [recommendedCommunities, setRecommendedCommunities] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchTopInfluencers = async () => {
-      try {
-        const response = await axios.get("/api/influence-analysis");
-        setTopInfluencers(response.data.top_influencers || []);
-      } catch (error) {
-        setError("Failed to load top influencers.");
-      } finally {
+    // Fetch recommended communities data from the API
+    fetch(`/api/recommended-communities/${userId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.recommended_communities) {
+          setRecommendedCommunities(data.recommended_communities);
+        }
         setLoading(false);
-      }
-    };
-
-    fetchTopInfluencers();
-  }, []);
+      })
+      .catch((error) => {
+        console.error("Error fetching recommended communities:", error);
+        setError("Failed to load recommended communities.");
+        setLoading(false);
+      });
+  }, [userId]);
 
   if (loading) {
-    return <div className="text-white">Loading top influencers...</div>;
+    return <div className="text-white">Loading recommended communities...</div>;
   }
 
   if (error) {
@@ -53,34 +54,35 @@ const InfluenceAnalysisCard = () => {
               ></path>
             </svg>
           </div>
-          <h2 className="text-sm font-semibold text-white">Top Influencers</h2>
+          <h2 className="text-sm font-semibold text-white">
+            Recommended Communities
+          </h2>
         </div>
       </div>
 
-      {/* Scrollable influencers list */}
+      {/* Scrollable communities list */}
       <div className="relative h-64 overflow-y-auto space-y-4 rounded-lg bg-slate-900/50 p-3 scrollbar-thin scrollbar-thumb-indigo-600 scrollbar-track-slate-800 scrollbar-rounded-lg pr-2">
-        {topInfluencers.length ? (
+        {recommendedCommunities.length ? (
           <ul className="space-y-4">
-            {topInfluencers.map(([userId, centrality], index) => (
+            {recommendedCommunities.map(({ community_id, shared_interests }, index) => (
               <li key={index} className="rounded-lg bg-slate-800 p-4 shadow-sm">
                 <p className="text-sm font-medium text-slate-400">
-                  User ID: <span className="text-white">{userId}</span>
+                  Community ID:{" "}
+                  <span className="text-white">{community_id}</span>
                 </p>
                 <p className="text-sm font-medium text-slate-400">
-                  Centrality:{" "}
-                  <span className="text-emerald-500">
-                    {centrality.toFixed(4)}
-                  </span>
+                  Shared Interests:{" "}
+                  <span className="text-emerald-500">{shared_interests}</span>
                 </p>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="text-sm text-slate-400">No top influencers available.</p>
+          <p className="text-sm text-slate-400">No recommended communities available.</p>
         )}
       </div>
     </div>
   );
 };
 
-export default InfluenceAnalysisCard;
+export default RecommendedCommunities;
