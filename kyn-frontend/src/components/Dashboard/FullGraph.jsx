@@ -75,7 +75,7 @@ const FullGraphComponent = () => {
   };
 
   return (
-    <div className="flex justify-center items-center my-6">
+    <div className="flex justify-center items-center bg-slate-400 my-6">
       {/* Container with fixed width and height, and scrollbar */}
       <div className="w-[600px] h-[400px] overflow-auto border rounded-lg p-4">
         {/* Render the graph */}

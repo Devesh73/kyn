@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Loader from "../Shared/Loader";  // Assuming you have a Loader component for loading states
+import Loader from "../Loader";  // Assuming you have a Loader component for loading states
 
 const UserInteractionsCard = ({ userId }) => {
   const [interactions, setInteractions] = useState(null);
