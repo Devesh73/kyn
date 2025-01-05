@@ -28,3 +28,35 @@
 ## Additional Notes
 - If you encounter any issues during installation, ensure you have the correct version of Node.js and npm installed.
 - Consult the project's documentation or maintainers for further assistance.
+
+# Backend Setup Instructions
+
+## Prerequisites
+1. Ensure Python (3.8 or later) is installed. You can download it from [Python Official Website](https://www.python.org/).
+2. Install `pip`, which is usually bundled with Python.
+
+## Installation
+1. Navigate to the project directory:
+   ```
+   cd backend
+   ```
+2. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
+
+3. The backend will start running on `http://localhost:5000` by default.
+
+---
+
+## Additional Notes
+- **Backend**: Ensure you have the required Python libraries installed as per `requirements.txt`.
+- **Integration**: Ensure the frontend is configured to call backend APIs hosted at `http://localhost:5000`.
+
+---
+
+## Project Structure
+- **Frontend Directory**: `kyn-frontend`
+- **Backend Directory**: `backend`
+
+For detailed documentation or further assistance, consult the project's maintainers or documentation.
