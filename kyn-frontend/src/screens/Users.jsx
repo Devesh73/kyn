@@ -11,8 +11,10 @@ import ChatBotContainer from '../components/ChatBotContainer';
 const Users = () => {
   const [users, setUsers] = useState([]); // Stores list of users
   const [selectedUser, setSelectedUser] = useState(null); // Currently selected user
-  const [searchQuery, setSearchQuery] = useState(''); // Search input
-  const [loading, setLoading] = useState(false); // Loading state for search
+  const [loading, setLoading] = useState(false); // General loading state
+  const [recommendedConnectionsLoading, setRecommendedConnectionsLoading] = useState(false); // Loader for Recommended Connections
+  const [recommendedCommunitiesLoading, setRecommendedCommunitiesLoading] = useState(false); // Loader for Recommended Communities
+  const [userInfluenceLoading, setUserInfluenceLoading] = useState(false); // Loader for User Influence
   const [error, setError] = useState(''); // Error messages
 
   // Fetch the list of users on component mount
@@ -32,59 +34,59 @@ const Users = () => {
     fetchUsers();
   }, []);
 
-  // Handle search form submission
-  const handleSearch = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    try {
-      const response = await fetch(`/api/user-search/${searchQuery}`);
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'User not found.');
-      setSelectedUser(data);
-    } catch (err) {
-      console.error('Search error:', err);
-      setError(err.message);
-    } finally {
-      setLoading(false);
-    }
+  // Handle user selection
+  const handleSelectUser = (user) => {
+    setSelectedUser(user);
+    setRecommendedConnectionsLoading(true);
+    setRecommendedCommunitiesLoading(true);
+    setUserInfluenceLoading(true);
+
+    // Simulate fetching data (replace with real API calls inside components)
+    setTimeout(() => setRecommendedConnectionsLoading(false), 1000);
+    setTimeout(() => setRecommendedCommunitiesLoading(false), 1200);
+    setTimeout(() => setUserInfluenceLoading(false), 1500);
   };
 
   return (
     <div className="min-h-screen p-6 bg-black flex flex-row gap-6">
       {/* Users List Section */}
-      <UsersList users={users} onSelectUser={setSelectedUser} />
-      {/* <UserInfluenceCard userId={selectedUser.user_id} />// */}
-      <div className='flex flex-col gap-6 w-full'>
+      <UsersList users={users} onSelectUser={handleSelectUser} />
+      
+      <div className="flex flex-col gap-6 w-full">
         {/* User Details Section */}
-      {selectedUser ? (
-        <>
-          <UserDetails user={selectedUser} />
-          
-          
-          <UserInteractionsCard userId={selectedUser.user_id} />
+        {selectedUser ? (
+          <>
+            <UserDetails user={selectedUser} />
+            <UserInteractionsCard userId={selectedUser.user_id} />
 
-          <div className="flex flex-row gap-6">
-            <RecommendedConnections userId={selectedUser.user_id}/>
-            <RecommendedCommunities userId={selectedUser.user_id}/>
-            <UserInfluenceCard userId={selectedUser.user_id} />
+            <div className="flex flex-row gap-6">
+              <RecommendedConnections
+                userId={selectedUser.user_id}
+                isLoading={recommendedConnectionsLoading}
+              />
+              <RecommendedCommunities
+                userId={selectedUser.user_id}
+                isLoading={recommendedCommunitiesLoading}
+              />
+              <UserInfluenceCard
+                userId={selectedUser.user_id}
+                isLoading={userInfluenceLoading}
+              />
+            </div>
+
+            <UserCommunityDetails user={selectedUser} />
+          </>
+        ) : (
+          <div className="h-full flex items-center justify-center text-gray-500">
+            Select a user to view details or search for a user.
           </div>
-
-          <UserCommunityDetails user={selectedUser} />
-
-        </>
-      ) : (
-        <div className="h-full flex items-center justify-center text-gray-500">
-          Select a user to view details or search for a user.
-        </div>
-      )}
-
+        )}
       </div>
+
       {/* Collapsible Chatbot */}
-      <div className="min-h-scree relative">
+      <div className="min-h-screen relative">
         <ChatBotContainer />
       </div>
-      
     </div>
   );
 };

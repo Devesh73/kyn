@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Loader from "../Loader";  // Assuming you have a Loader component for loading states
+import Loader from "../Loader"; // Assuming you have a Loader component for loading states
 
 const UserInfluenceCard = ({ userId }) => {
   const [influence, setInfluence] = useState(null);
@@ -9,10 +9,14 @@ const UserInfluenceCard = ({ userId }) => {
 
   useEffect(() => {
     const fetchUserInfluence = async () => {
+      setLoading(true); // Reset loading state when userId changes
+      setError(null);   // Reset error state when userId changes
+
       try {
         const response = await axios.get(`/api/user-influence/${userId}`);
-        setInfluence(response.data.influence);  // Assuming the response contains influence data
+        setInfluence(response.data.influence); // Assuming the response contains influence data
       } catch (error) {
+        console.error("Error fetching user influence:", error);
         setError("Failed to load user influence.");
       } finally {
         setLoading(false);

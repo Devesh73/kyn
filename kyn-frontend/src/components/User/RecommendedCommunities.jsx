@@ -6,6 +6,9 @@ const RecommendedCommunities = ({ userId }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    setLoading(true); // Reset loading state when userId changes
+    setError(null);   // Reset error state when userId changes
+
     // Fetch recommended communities data from the API
     fetch(`/api/recommended-communities/${userId}`)
       .then((response) => response.json())

@@ -6,13 +6,16 @@ const RecommendedConnections = ({ userId }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    setLoading(true); // Reset loading state when userId changes
+    setError(null);   // Reset error state when userId changes
+
     // Fetch recommended connections data from the API
     fetch(`/api/recommended-connections/${userId}`)
       .then((response) => response.json())
       .then((data) => {
         if (data.recommended_connections) {
           const filteredConnections = data.recommended_connections.filter(
-            ([, ,score]) => score > 0
+            ([, , score]) => score > 0
           );
           setRecommendedConnections(filteredConnections);
         }
@@ -74,7 +77,7 @@ const RecommendedConnections = ({ userId }) => {
                 </p>
                 <p className="text-sm font-medium text-slate-400">
                   Score:{" "}
-                  <span className="text-emerald-500">{(score*100).toFixed(3)}%</span>
+                  <span className="text-emerald-500">{(score * 100).toFixed(3)}%</span>
                 </p>
               </li>
             ))}
