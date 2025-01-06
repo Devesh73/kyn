@@ -6,6 +6,7 @@ import UserInfluenceCard from '../components/User/UserInfluenceCard';
 import UserInteractionsCard from '../components/User/UserInteractionsCard';
 import RecommendedConnections from '../components/User/RecommendedConnections';
 import RecommendedCommunities from '../components/User/RecommendedCommunities';
+import ChatBotContainer from '../components/ChatBotContainer';
 
 const Users = () => {
   const [users, setUsers] = useState([]); // Stores list of users
@@ -78,6 +79,10 @@ const Users = () => {
         </div>
       )}
 
+      </div>
+      {/* Collapsible Chatbot */}
+      <div className="min-h-scree relative">
+        <ChatBotContainer />
       </div>
       
     </div>

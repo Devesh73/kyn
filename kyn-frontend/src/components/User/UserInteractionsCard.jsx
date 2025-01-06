@@ -8,7 +8,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const UserInteractionsCard = ({ userId }) => {
   const [interactions, setInteractions] = useState([]);
-  const [aggregatedInteractions, setAggregatedInteractions] = useState([]);
+  const [aggregatedWeights, setAggregatedWeights] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -29,60 +29,58 @@ const UserInteractionsCard = ({ userId }) => {
     }
   }, [userId]);
 
-  // Aggregating interaction data by target user and interaction type
+  // Aggregating interaction weights by target user and interaction type
   useEffect(() => {
     if (interactions.length > 0) {
-      const aggregated = aggregateInteractions(interactions);
-      setAggregatedInteractions(aggregated);
+      const aggregated = aggregateInteractionWeights(interactions);
+      setAggregatedWeights(aggregated);
     }
   }, [interactions]);
 
-  // Aggregate interactions by target user and interaction type
-  const aggregateInteractions = (interactions) => {
-    const interactionData = {};
+  const aggregateInteractionWeights = (interactions) => {
+    const weightData = {};
 
-    interactions.forEach((interaction) => {
-      const { target, attributes } = interaction;
-      const interactionType = attributes.interaction_type;
+    interactions.forEach(({ target, attributes }) => {
+      const { interaction_type, weight } = attributes;
 
-      if (!interactionData[target]) {
-        interactionData[target] = { follow: 0, like: 0, message: 0, comment: 0 };
+      if (!weightData[target]) {
+        weightData[target] = { follow: 0, like: 0, message: 0, comment: 0 };
       }
 
-      interactionData[target][interactionType] += 1;
+      weightData[target][interaction_type] += weight;
     });
 
-    return interactionData;
+    return weightData;
   };
 
   // Prepare chart data
   const chartData = {
-    labels: Object.keys(aggregatedInteractions), // Target user IDs
+    labels: Object.keys(aggregatedWeights), // Target user IDs
     datasets: [
       {
-        label: 'Follow',
-        data: Object.values(aggregatedInteractions).map((data) => data.follow),
+        label: "Follow",
+        data: Object.values(aggregatedWeights).map((data) => data.follow),
         backgroundColor: "rgba(30, 144, 255, 0.8)", // Follow color
         borderColor: "rgba(30, 144, 255, 1)",
         borderWidth: 1,
       },
       {
-        label: 'Like',
-        data: Object.values(aggregatedInteractions).map((data) => data.like),
+        label: "Like",
+        data: Object.values(aggregatedWeights).map((data) => data.like),
         backgroundColor: "rgba(255, 99, 132, 0.8)", // Like color
         borderColor: "rgba(255, 99, 132, 1)",
         borderWidth: 1,
       },
       {
-        label: 'Message',
-        data: Object.values(aggregatedInteractions).map((data) => data.message),
+        label: "Message",
+        data: Object.values(aggregatedWeights).map((data) => data.message),
         backgroundColor: "rgba(75, 192, 192, 0.8)", // Message color
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
       },
       {
-        label: 'Comment',
-        data: Object.values(aggregatedInteractions).map((data) => data.comment),
+        label: "Comment",
+        data: Object.values(aggregatedWeights).map((data) => data.comment),
         backgroundColor: "rgba(255, 159, 64, 0.8)", // Comment color
         borderColor: "rgba(255, 159, 64, 1)",
         borderWidth: 1,
@@ -105,10 +103,10 @@ const UserInteractionsCard = ({ userId }) => {
         titleColor: "white",
         bodyColor: "white",
         callbacks: {
-          label: function (tooltipItem) {
+          label: (tooltipItem) => {
             const interactionType = tooltipItem.dataset.label;
-            const count = tooltipItem.raw;
-            return `${interactionType}: ${count}`;
+            const weight = tooltipItem.raw;
+            return `${interactionType}: ${weight}`;
           },
         },
       },
@@ -151,7 +149,7 @@ const UserInteractionsCard = ({ userId }) => {
       <h3 className="text-sm font-semibold text-white mb-4">Interactions for User: {userId}</h3>
 
       {/* Bar Chart Display */}
-      {aggregatedInteractions && Object.keys(aggregatedInteractions).length > 0 ? (
+      {aggregatedWeights && Object.keys(aggregatedWeights).length > 0 ? (
         <div className="flex-1">
           <Bar data={chartData} options={chartOptions} />
         </div>

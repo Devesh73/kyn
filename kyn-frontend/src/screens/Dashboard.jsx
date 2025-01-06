@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import ChatBotContainer from "../components/Dashboard/ChatBotContainer";
+import ChatBotContainer from "../components/ChatBotContainer";
 import InfluenceAnalysisCard from "../components/Dashboard/InfluenceAnalysisCard";
 import TrendingInterestsCard from "../components/Dashboard/TrendingInterestsCard";
 import InteractionTrends from "../components/Dashboard/InteractionTrends";
@@ -12,8 +12,6 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [apiData, setApiData] = useState(null);
-  const [showChatbot, setShowChatbot] = useState(true);
-  const [chatbotCollapsed, setChatbotCollapsed] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -104,23 +102,8 @@ const Dashboard = () => {
       </div>
 
     {/* Collapsible Chatbot */}
-    <div
-        className={`fixed z-100 ${
-          chatbotCollapsed ? "bottom-4 right-4 h-13 w-48" : "bottom-4 right-4 h-[400px] w-[300px]"
-        } bg-gray-800 text-gray-200 shadow-lg rounded-lg overflow-hidden`}
-      >
-        <div className="flex justify-between items-center p-2 bg-gray-700 border-b border-gray-600">
-          <h3 className="text-lg font-bold">
-            {chatbotCollapsed ? "Chatbot" : "Chatbot Expanded"}
-          </h3>
-          <button
-            onClick={() => setChatbotCollapsed(!chatbotCollapsed)}
-            className="text-gray-400 hover:text-gray-200"
-          >
-            {chatbotCollapsed ? "Expand" : "Collapse"}
-          </button>
-        </div>
-        {!chatbotCollapsed && <ChatBotContainer />}
+      <div className="min-h-scree relative">
+        <ChatBotContainer />
       </div>
     </div>
   );

@@ -24,8 +24,8 @@ const Login = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-md p-6 bg-white rounded-lg shadow-md">
+    <div className="flex items-center justify-center min-h-screen bg-slate-950">
+      <div className="w-full max-w-md p-6 bg-slate-800 rounded-lg shadow-md">
         <h2 className="mb-6 text-2xl font-bold text-center text-purple-600">
           Admin Login
         </h2>
@@ -36,7 +36,7 @@ const Login = () => {
           <div className="mb-4">
             <label
               htmlFor="email"
-              className="block mb-2 text-sm font-medium text-gray-600"
+              className="block mb-2 text-sm font-medium text-gray-100"
             >
               Email
             </label>
@@ -52,7 +52,7 @@ const Login = () => {
           <div className="mb-4">
             <label
               htmlFor="password"
-              className="block mb-2 text-sm font-medium text-gray-600"
+              className="block mb-2 text-sm font-medium text-gray-100"
             >
               Password
             </label>

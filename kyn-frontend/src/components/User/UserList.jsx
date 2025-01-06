@@ -6,6 +6,7 @@ const UsersList = ({ onSelectUser }) => {
   const [filteredUsers, setFilteredUsers] = useState([]); // Filtered user list
   const [loading, setLoading] = useState(true); // Loading state
   const [error, setError] = useState(null); // Error state
+  const [selectedUserId, setSelectedUserId] = useState(null); // Track selected user
 
   // Fetch the list of users on component mount
   useEffect(() => {
@@ -60,6 +61,12 @@ const UsersList = ({ onSelectUser }) => {
     }
   };
 
+  // Handle user selection
+  const handleUserClick = (user) => {
+    setSelectedUserId(user.user_id); // Update the selected user ID
+    onSelectUser(user); // Call the parent-provided function with the selected user
+  };
+
   if (loading) {
     return <div className="text-white">Loading users...</div>;
   }
@@ -94,8 +101,12 @@ const UsersList = ({ onSelectUser }) => {
             {filteredUsers.map((user) => (
               <li
                 key={user.user_id}
-                className="rounded-lg bg-slate-800 p-4 shadow-sm cursor-pointer hover:bg-purple-700 hover:shadow-md transition"
-                onClick={() => onSelectUser(user)}
+                className={`rounded-lg p-4 shadow-sm cursor-pointer transition ${
+                  selectedUserId === user.user_id
+                    ? "bg-purple-600 hover:bg-purple-800" // Selected state
+                    : "bg-slate-800 hover:bg-purple-700" // Default hover state
+                }`}
+                onClick={() => handleUserClick(user)}
               >
                 <h3 className="text-lg font-semibold text-white">{user.name}</h3>
                 <p className="text-sm font-medium text-slate-400">{user.email}</p>
@@ -112,3 +123,4 @@ const UsersList = ({ onSelectUser }) => {
 };
 
 export default UsersList;
+
