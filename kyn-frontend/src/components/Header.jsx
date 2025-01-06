@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../assets/Kynnovate.png'; // Adjust the path as needed
 
 const Header = () => {
   return (
@@ -10,7 +11,7 @@ const Header = () => {
       }}
     >
       <div className="container mx-auto flex justify-between items-center px-4">
-        <h1 className="text-2xl font-bold">KYN Dashboard</h1>
+        <img src={logo} alt="KYN Dashboard Logo" className="h-10" />
         <nav>
           <ul className="flex space-x-6">
             <li><Link to="/" className="hover:text-gray-200">Home</Link></li>
