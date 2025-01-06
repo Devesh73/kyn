@@ -144,6 +144,18 @@ def get_community_insights():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/users", methods=["GET"])
+def get_users():
+    """
+    Endpoint to fetch the list of all users.
+    """
+    try:
+        users = load_data_from_file(USERS_FILE).get("users", [])
+        return jsonify({"users": users})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/user-community/<user_id>", methods=["GET"])
 def get_user_community(user_id):
     """
@@ -501,18 +513,6 @@ def chat():
         return jsonify({"error": "Message is required."}), 400
     response = get_chatbot_response(user_input)
     return jsonify({"response": response})
-
-
-@app.route("/api/users", methods=["GET"])
-def get_users():
-    """
-    Endpoint to fetch the list of all users.
-    """
-    try:
-        users = load_data_from_file(USERS_FILE).get("users", [])
-        return jsonify({"users": users})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":
