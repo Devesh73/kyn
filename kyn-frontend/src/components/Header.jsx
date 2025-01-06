@@ -7,6 +7,8 @@ const Header = () => {
 
   // Determine if the current page is /dashboard or /users
   const isDashboardOrUsers = location.pathname === '/dashboard' || location.pathname === '/users';
+  // Check if current page is / or /login to hide nav links
+  const isHomeOrLogin = location.pathname === '/' || location.pathname === '/login';
 
   return (
     <header
@@ -20,8 +22,12 @@ const Header = () => {
         <Link to="/"><img src={logo} alt="KYN Dashboard Logo" className="h-10" /></Link>
         <nav className="flex-grow">
           <ul className="flex justify-end space-x-6">
-            <li><Link to="/dashboard" className="hover:text-gray-200">Dashboard</Link></li>
-            <li><Link to="/users" className="hover:text-gray-200">Users</Link></li>
+            {!isHomeOrLogin && (
+              <>
+                <li><Link to="/dashboard" className="hover:text-gray-200">Dashboard</Link></li>
+                <li><Link to="/users" className="hover:text-gray-200">Users</Link></li>
+              </>
+            )}
             <li>
               <Link
                 to={isDashboardOrUsers ? "/" : "/login"}
