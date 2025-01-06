@@ -11,7 +11,7 @@ const Header = () => {
       }}
     >
       <div className="container mx-auto flex justify-between items-center px-4">
-        <img src={logo} alt="KYN Dashboard Logo" className="h-10" />
+      <Link to="/" ><img src={logo} alt="KYN Dashboard Logo" className="h-10" /></Link>
         <nav>
           <ul className="flex space-x-6">
             <li><Link to="/" className="hover:text-gray-200">Home</Link></li>
