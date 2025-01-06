@@ -224,9 +224,25 @@ def user_influence(user_id):
 def influence_analysis():
     try:
         graph = build_graph_from_files()
-        centrality = nx.degree_centrality(graph)
-        top_influencers = sorted(centrality.items(), key=lambda x: x[1], reverse=True)
-        return jsonify({"top_influencers": top_influencers})
+        degree_centrality = nx.degree_centrality(graph)
+        betweenness_centrality = nx.betweenness_centrality(graph)
+        closeness_centrality = nx.closeness_centrality(graph)
+        influence_scores = {}
+        for user_id in graph.nodes:
+            avg_score = (
+                degree_centrality.get(user_id, 0)
+                + betweenness_centrality.get(user_id, 0)
+                + closeness_centrality.get(user_id, 0)
+            ) / 3
+
+            influence_scores[user_id] = avg_score
+
+        sorted_influencers = sorted(
+            influence_scores.items(), key=lambda x: x[1], reverse=True
+        )
+
+        return jsonify({"top_influencers": sorted_influencers})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

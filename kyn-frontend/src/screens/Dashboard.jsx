@@ -84,9 +84,9 @@ const Dashboard = () => {
       <div className="container mx-auto p-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column */}
         <div className="space-y-6">
-          <InfluenceAnalysisCard />
           <TrendingInterestsCard />
           <ActiveCommunities />
+          <InfluenceAnalysisCard />
         </div>
 
         {/* Right Column */}

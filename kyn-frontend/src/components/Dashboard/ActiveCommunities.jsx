@@ -75,7 +75,7 @@ const ActiveCommunities = () => {
                 <p className="text-sm font-medium text-slate-400">
                   Activity Score:{" "}
                   <span className="text-emerald-500">
-                    {community.activity_score}
+                    {(community.activity_score)/10}%
                   </span>
                 </p>
                 <p className="text-sm font-medium text-slate-400">

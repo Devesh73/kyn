@@ -67,9 +67,9 @@ const InfluenceAnalysisCard = () => {
                   User ID: <span className="text-white">{userId}</span>
                 </p>
                 <p className="text-sm font-medium text-slate-400">
-                  Centrality:{" "}
+                  Influence Score:{" "}
                   <span className="text-emerald-500">
-                    {centrality.toFixed(4)}
+                    {(centrality*100).toFixed(2)}%
                   </span>
                 </p>
               </li>
