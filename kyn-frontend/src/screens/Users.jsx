@@ -9,15 +9,15 @@ import RecommendedCommunities from '../components/User/RecommendedCommunities';
 import ChatBotContainer from '../components/ChatBotContainer';
 
 const Users = () => {
-  const [users, setUsers] = useState([]); // Stores list of users
-  const [selectedUser, setSelectedUser] = useState(null); // Currently selected user
-  const [loading, setLoading] = useState(false); // General loading state
-  const [recommendedConnectionsLoading, setRecommendedConnectionsLoading] = useState(false); // Loader for Recommended Connections
-  const [recommendedCommunitiesLoading, setRecommendedCommunitiesLoading] = useState(false); // Loader for Recommended Communities
-  const [userInfluenceLoading, setUserInfluenceLoading] = useState(false); // Loader for User Influence
-  const [error, setError] = useState(''); // Error messages
+  const [users, setUsers] = useState([]); 
+  const [selectedUser, setSelectedUser] = useState(null); 
+  const [loading, setLoading] = useState(false); 
+  const [recommendedConnectionsLoading, setRecommendedConnectionsLoading] = useState(false);
+  const [recommendedCommunitiesLoading, setRecommendedCommunitiesLoading] = useState(false); 
+  const [userInfluenceLoading, setUserInfluenceLoading] = useState(false); 
+  const [error, setError] = useState(''); 
 
-  // Fetch the list of users on component mount
+
   useEffect(() => {
     const fetchUsers = async () => {
       try {

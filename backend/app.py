@@ -17,7 +17,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 USERS_FILE = os.path.join(BASE_DIR, "data/users.json")
 INTERACTIONS_FILE = os.path.join(BASE_DIR, "data/interactions.json")
 app = Flask(__name__)
-CORS(app)  # Enable CORS for all routes
+CORS(app)
 
 
 def generate_random_coordinates():
@@ -505,14 +505,20 @@ def visualize_community():
 
 
 @app.route("/api/chat", methods=["POST"])
-def chat():
-    """Chatbot endpoint for interacting with users."""
-    data = request.get_json()
-    user_input = data.get("message", "")
-    if not user_input:
-        return jsonify({"error": "Message is required."}), 400
-    response = get_chatbot_response(user_input)
-    return jsonify({"response": response})
+def chatbot_endpoint():
+    try:
+        """
+        Flask endpoint for chatbot interaction.
+        """
+        data = request.get_json()
+        user_input = data.get("message", "")
+        if not user_input:
+            return jsonify({"error": "Message is required."}), 400
+
+        response = get_chatbot_response(user_input)
+        return jsonify({"response": response})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 if __name__ == "__main__":

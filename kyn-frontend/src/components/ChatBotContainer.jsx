@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { FiPlus, FiSend } from "react-icons/fi"; // Icons for plus and send
-import ReactMarkdown from "react-markdown"; // Library for rendering Markdown
-
+import { FiPlus, FiSend } from "react-icons/fi";
+import ReactMarkdown from "react-markdown"; 
 const ChatBotContainer = () => {
   const [messages, setMessages] = useState([
     { text: "Hello, **How are you?**", sender: "bot" },
