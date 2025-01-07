@@ -9,6 +9,7 @@ load_dotenv()
 API_KEY = os.getenv("GOOGLE_API_KEY")
 BASE_API_URL = "http://127.0.0.1:5000/api"
 
+
 # Configure Gemini SDK
 genai.configure(api_key=API_KEY)
 generation_config = {
@@ -57,65 +58,67 @@ def fetch_api_data(endpoint, params=None, limit=None):
 
 # Preprocess data for Gemini
 def format_data_for_gemini(api_name, data):
-    if api_name == "trending_interests":
-        return {"trending_interests": data.get("trending_interests", [])[:20]}
+    try:
+        if api_name == "trending_interests":
+            return {"trending_interests": data.get("trending_interests", [])[:20]}
 
-    if api_name == "active_communities":
-        communities = data.get("active_communities", [])
-        for community in communities:
-            community["activity_score"] = round(community["activity_score"] / 100, 2)
-        return {"active_communities": communities[:20]}
+        if api_name == "active_communities":
+            communities = data.get("active_communities", [])
+            for community in communities:
+                community["activity_score"] = round(
+                    community["activity_score"] / 100, 2
+                )
+            return {"active_communities": communities[:20]}
 
-    if api_name == "influence_analysis":
-        influencers = data.get("top_influencers", [])
-        for influencer in influencers:
-            influencer[1] = round(influencer[1] * 100, 2)
-        return {"top_influencers": influencers[:20]}
+        if api_name == "influence_analysis":
+            influencers = data.get("top_influencers", [])
+            for influencer in influencers:
+                influencer[1] = round(influencer[1] * 100, 2)
+            return {"top_influencers": influencers[:20]}
 
-    if api_name == "interaction_trends":
-        return {"interaction_trends": data.get("interaction_trends", [])[:20]}
+        if api_name == "interaction_trends":
+            return {"interaction_trends": data.get("interaction_trends", [])[:20]}
 
-    if api_name == "user_influence":
-        influence = data.get("influence", {})
-        avg_score = round(
-            (
-                100 * influence.get("betweenness_centrality", 0)
-                + 100 * influence.get("closeness_centrality", 0)
-                + 100 * influence.get("degree_centrality", 0)
+        if api_name == "user_influence":
+            influence = data.get("influence", {})
+            avg_score = round(
+                (
+                    100 * influence.get("betweenness_centrality", 0)
+                    + 100 * influence.get("closeness_centrality", 0)
+                    + 100 * influence.get("degree_centrality", 0)
+                )
+                / 3,
+                2,
             )
-            / 3,
-            2,
-        )
-        return {"user_id": data.get("user_id"), "influence_score": avg_score}
+            return {"user_id": data.get("user_id"), "influence_score": avg_score}
 
-    if api_name in ["recommended_connections", "recommended_communities"]:
-        recommendations = data.get(api_name.replace("recommended_", ""), [])[:20]
-        if api_name == "recommended_connections":
-            for rec in recommendations:
-                rec[2] = round(rec[2] * 100, 2)
-        return {api_name: recommendations}
+        if api_name in ["recommended_connections", "recommended_communities"]:
+            recommendations = data.get(api_name.replace("recommended_", ""), [])[:20]
+            if api_name == "recommended_connections":
+                for rec in recommendations:
+                    rec[2] = round(rec[2] * 100, 2)
+            return {api_name: recommendations}
 
-    return data
+        return data
+    except Exception as e:
+        print(f"Error formatting data for Gemini: {str(e)}")
+        return {"error": f"Formatting failed for {api_name}. Error: {str(e)}"}
 
 
 # Extract User IDs using LLM
 def extract_user_ids(user_input):
     user_id_prompt = f"""
     Extract the user ID from the input query. The user ID is a unique identifier for a user in the social media platform.
-    You can do this by looking for words in the user input such as 
-    user id (for example: user 12), 
-    User ID (for example: User 22), 
-    u<digits> (for example: u32), 
-    U<digits> (for example: U77), etc.
-    There may be multiple User IDs in the query, extract each one separately.
+    You can do this by looking for patterns like:
+    - user id (e.g., "user 12")
+    - User ID (e.g., "User 22")
+    - u<digits> (e.g., "u32")
+    - U<digits> (e.g., "U77"), etc.
 
-    Once you found the User IDs, they must be strictly represented in the following FORMAT only:
-    "U<number>". 
-    
-    Ensure the result is formatted correctly and output only that and nothing else.
+    Output all found user IDs in the format "U<number>".
+    If no user ID is found, return "None".
+
     User Query: "{user_input}"
-
-    If no user ID is found, return "None". 
     """
     response = chat_session.send_message(user_id_prompt)
     user_ids = [
@@ -128,8 +131,8 @@ def extract_user_ids(user_input):
 # Classify user query and trigger APIs
 def classify_and_trigger_apis(user_input):
     classification_prompt = f"""
-    You are an API classifier. Given the user query below, decide which are all the APIs to call.
-    If the query asks for specific data, output only all the relevant API or APIs that may need to be called from this list of APIs:
+    You are an API classifier. Based on the user query below, decide which APIs to call.
+    Select all relevant APIs from the following list:
     - trending_interests
     - active_communities
     - influence_analysis
@@ -138,9 +141,9 @@ def classify_and_trigger_apis(user_input):
     - user_influence (requires user_id)
     - user_interaction (requires user_id)
     - recommended_connections (requires user_id)
-    - recommended-communities (requires user_id)
+    - recommended_communities (requires user_id)
 
-    Make sure to output only the names of the selected APIs and strictly nothing else.
+    Output only the names of the relevant APIs, one per line.
 
     User Query: "{user_input}"
     """
@@ -163,51 +166,51 @@ def handle_irrelevant_queries(user_input):
 
 # Process and respond to queries
 def get_chatbot_response(user_input):
-    api_triggers = classify_and_trigger_apis(user_input)
-    user_ids = extract_user_ids(user_input)
-    data_payload = {}
+    try:
+        api_triggers = classify_and_trigger_apis(user_input)
+        user_ids = extract_user_ids(user_input)
+        data_payload = {}
 
-    if "user_search" in api_triggers and user_ids:
-        for user_id in user_ids:
-            search_endpoint = API_ENDPOINTS["user_search"].format(user_id=user_id)
-            search_result = fetch_api_data(search_endpoint)
-            if "error" not in search_result:
-                data_payload[f"user_search_{user_id}"] = search_result
-
-    for trigger in api_triggers:
-        if "requires user_id" in trigger:
-            api_name = trigger.split()[0]
-            for user_id in user_ids:
-                if f"user_search_{user_id}" not in data_payload:
-                    continue  # Skip if user is not validated via user_search
-                endpoint = API_ENDPOINTS[api_name].format(user_id=user_id)
+        # Handle user-specific APIs
+        for trigger in api_triggers:
+            if trigger in [
+                "user_search",
+                "user_influence",
+                "user_interaction",
+                "recommended_connections",
+                "recommended_communities",
+            ]:
+                if user_ids:
+                    for user_id in user_ids:
+                        endpoint = API_ENDPOINTS[trigger].format(user_id=user_id)
+                        api_data = fetch_api_data(endpoint, limit=20)
+                        formatted_data = format_data_for_gemini(trigger, api_data)
+                        data_payload[f"{trigger}_{user_id}"] = formatted_data
+                else:
+                    print(f"Skipping {trigger}: No user IDs found.")
+            elif trigger in API_ENDPOINTS:
+                endpoint = API_ENDPOINTS[trigger]
                 api_data = fetch_api_data(endpoint, limit=20)
-                formatted_data = format_data_for_gemini(api_name, api_data)
-                data_payload[f"{api_name}_{user_id}"] = formatted_data
-        else:
-            api_name = trigger.strip()
-            endpoint = API_ENDPOINTS.get(api_name)
-            if endpoint:
-                api_data = fetch_api_data(endpoint, limit=20)
-                formatted_data = format_data_for_gemini(api_name, api_data)
-                data_payload[api_name] = formatted_data
+                formatted_data = format_data_for_gemini(trigger, api_data)
+                data_payload[trigger] = formatted_data
 
-    if not data_payload:
-        return handle_irrelevant_queries(user_input)
+        if not data_payload:
+            return handle_irrelevant_queries(user_input)
 
-    master_prompt = f"""
-    You are an advanced behavioral analyst and data assistant for a community manager or platform owner of a social media platform. Given the user's query and relevant preprocessed data, perform the following:
+        master_prompt = f"""
+        You are an advanced data assistant for a social media platform manager. Based on the user's query and preprocessed data, provide the following:
+        - Clear, user-friendly insights or summaries.
+        - Key trends, patterns, or comparisons.
+        - Use percentages for scores and structured responses.
 
-    - Provide clear, user-friendly insights or summaries.
-    - Present key trends, patterns, or comparisons in a structured and easy-to-understand manner.
-    - Refer to all scores as percentages with a "%" symbol 
-    - If the query asks for a list or brief insights, provide concise and organized points.
-    - For detailed insights, present organized information with relevant explanations and recommendations.
+        User Query: {user_input}
+        Preprocessed Data: {json.dumps(data_payload, indent=2)}
 
-    User Query: {user_input}
-    Preprocessed Data: {json.dumps(data_payload, indent=2)}
+        Focus on actionable insights and avoid technical jargon.
+        """
+        response = chat_session.send_message(master_prompt)
+        return response.text.strip()
 
-    Always focus on delivering actionable insights in a clear and understandable way. Avoid technical jargon or backend details—make the response as useful and intuitive as possible for a community manager or platform owner.
-    """
-    response = chat_session.send_message(master_prompt)
-    return response.text.strip()
+    except Exception as e:
+        print(f"Error processing chatbot response: {str(e)}")
+        return f"An error occurred: {str(e)}"
