@@ -92,12 +92,30 @@ def format_data_for_gemini(api_name, data):
             )
             return {"user_id": data.get("user_id"), "influence_score": avg_score}
 
-        if api_name in ["recommended_connections", "recommended_communities"]:
-            recommendations = data.get(api_name.replace("recommended_", ""), [])[:20]
-            if api_name == "recommended_connections":
-                for rec in recommendations:
-                    rec[2] = round(rec[2] * 100, 2)
-            return {api_name: recommendations}
+        if api_name == "recommended_connections":
+            recommendations = data.get("recommended_connections", [])
+            formatted_connections = []
+            for rec in recommendations:
+                formatted_connections.append(
+                    {
+                        "source_user_id": rec[0],
+                        "target_user_id": rec[1],
+                        "connection_strength_percentage": round(rec[2] * 100, 2),
+                    }
+                )
+            return {"recommended_connections": formatted_connections}
+
+        if api_name == "recommended_communities":
+            communities = data.get("recommended_communities", [])
+            formatted_communities = []
+            for community in communities:
+                formatted_communities.append(
+                    {
+                        "community_id": community["community_id"],
+                        "shared_interests_count": community["shared_interests"],
+                    }
+                )
+            return {"recommended_communities": formatted_communities}
 
         return data
     except Exception as e:
@@ -108,14 +126,14 @@ def format_data_for_gemini(api_name, data):
 # Extract User IDs using LLM
 def extract_user_ids(user_input):
     user_id_prompt = f"""
-    Extract the user ID from the input query. The user ID is a unique identifier for a user in the social media platform.
+    Extract the user ID(s) from the input query. The user ID is a unique identifier for a user in the social media platform.
     You can do this by looking for patterns like:
     - user id (e.g., "user 12")
     - User ID (e.g., "User 22")
     - u<digits> (e.g., "u32")
     - U<digits> (e.g., "U77"), etc.
 
-    Output all found user IDs in the format "U<number>".
+    Output all found user IDs in the format "U<number>". One per line, with a comma between multiple IDs.
     If no user ID is found, return "None".
 
     User Query: "{user_input}"
@@ -201,7 +219,11 @@ def get_chatbot_response(user_input):
         You are an advanced data assistant for a social media platform manager. Based on the user's query and preprocessed data, provide the following:
         - Clear, user-friendly insights or summaries.
         - Key trends, patterns, or comparisons.
-        - Use percentages for scores and structured responses.
+        - Summarize recommendations clearly.
+            - For recommended connections, explain which users should connect, why, and the connection strength as a percentage.
+            - For recommended communities, explain the communities that the user might join and the number of shared interests they have.
+        - Use structured responses and avoid technical jargon.
+
 
         User Query: {user_input}
         Preprocessed Data: {json.dumps(data_payload, indent=2)}
