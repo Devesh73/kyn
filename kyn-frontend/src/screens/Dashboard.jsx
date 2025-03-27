@@ -9,6 +9,9 @@ import HorizontalNavigation from "../components/Layout/HorizontalNavigation";
 import VerticalTabsComponent from "../components/VerticalTabsComponent";
 import { TrendingUp, Users, User } from "lucide-react";
 import MisinformationTrendsChart from "../components/Dashboard/MisinformationTrendsChart";
+import MisinformationInsights from "../components/Dashboard/MisinformationInsights";
+import ReactMarkdown from 'react-markdown';
+
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -17,6 +20,8 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [chatbotCollapsed, setChatbotCollapsed] = useState(true);
   const [chatbotInput, setChatbotInput] = useState("");
+  const [selectedRegion, setSelectedRegion] = useState(null);
+  const [selectedNews, setSelectedNews] = useState(null);
 
   // Define tabs for the vertical tab component within Influencer Insights section
   const insightTabs = [
@@ -100,7 +105,50 @@ const Dashboard = () => {
         return (
           <div>
             <h2 className="text-2xl font-bold text-white mb-6">Misinformation Tracker</h2>
-            <MisinformationHeatmap />
+            <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+              {/* Map takes up 3/5 of the width */}
+              <div className="lg:col-span-3">
+                <MisinformationHeatmap onRegionSelect={setSelectedRegion} />
+              </div>
+              
+              {/* Insights panel takes up 2/5 of the width */}
+              <div className="lg:col-span-2">
+                <MisinformationInsights 
+                  selectedRegion={selectedRegion} 
+                  selectedNews={selectedNews}
+                  setSelectedNews={setSelectedNews}
+                />
+              </div>
+            </div>
+            
+            {/* News Analysis Section - Full width row below map and insights */}
+            <div className="mt-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+              {/* Wider news insights panel */}
+              <div className="lg:col-span-3 bg-black bg-opacity-40 rounded-xl p-4 border border-gray-800">
+                <h3 className="text-xl font-bold text-white mb-4">
+                  {selectedNews ? selectedNews.title : "Select a news item to analyze"}
+                </h3>
+                {selectedNews ? (
+                  <div className="prose prose-invert prose-sm max-w-none text-gray-300">
+                    <ReactMarkdown>
+                      {selectedNews.content}
+                    </ReactMarkdown>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center h-64 text-gray-300">
+                    <p>Click on a news item from the insights panel to view detailed analysis</p>
+                  </div>
+                )}
+              </div>
+              
+              {/* Placeholder for future feature */}
+              <div className="lg:col-span-1 bg-black bg-opacity-40 rounded-xl p-4 border border-gray-800">
+                <h3 className="text-lg font-bold text-white mb-4">Source Analysis</h3>
+                <div className="flex items-center justify-center h-64 text-gray-400">
+                  <p>Additional analysis features coming soon</p>
+                </div>
+              </div>
+            </div>
           </div>
         );
         

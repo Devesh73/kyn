@@ -1,8 +1,30 @@
 import React, { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, Marker, Tooltip } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
+import { AlertCircle } from "lucide-react";
+
+// Create custom marker icon for regions
+const createMarkerIcon = (urgency) => {
+  const color = urgency === 'critical' ? '#ef4444' : 
+                urgency === 'high' ? '#f59e0b' : 
+                urgency === 'medium' ? '#22c55e' : '#3b82f6';
+                
+  return L.divIcon({
+    className: 'custom-div-icon',
+    html: `<div style="
+      background-color: ${color}; 
+      width: 12px; 
+      height: 12px; 
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.7);
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);"
+    ></div>`,
+    iconSize: [12, 12],
+    iconAnchor: [6, 6]
+  });
+};
 
 // Heat Layer component to handle the heatmap
 const HeatLayer = ({ points }) => {
@@ -62,10 +84,52 @@ const HeatLayer = ({ points }) => {
   return null; // This component doesn't render anything directly
 };
 
-const MisinformationHeatmap = () => {
+// Clickable city markers component
+const RegionMarkers = ({ regions, onRegionSelect }) => {
+  const map = useMap();
+  
+  useEffect(() => {
+    // Ensure map is properly sized
+    map.invalidateSize();
+  }, [map]);
+
+  return (
+    <>
+      {regions.map((region, index) => (
+        <Marker
+          key={index}
+          position={[region.lat, region.lng]}
+          icon={createMarkerIcon(region.urgency)}
+          eventHandlers={{
+            click: () => {
+              console.log("Region clicked:", region.name);
+              onRegionSelect && onRegionSelect(region);
+              
+              // Optional: pan the map to center on clicked region
+              map.setView([region.lat, region.lng], 6, {
+                animate: true,
+                duration: 0.5
+              });
+            }
+          }}
+        >
+          <Tooltip direction="top" offset={[0, -10]} opacity={1}>
+            <div className="p-1">
+              <div className="font-bold text-slate-900">{region.name}</div>
+              <div className="text-xs text-slate-600">Click for insights</div>
+            </div>
+          </Tooltip>
+        </Marker>
+      ))}
+    </>
+  );
+};
+
+const MisinformationHeatmap = ({ onRegionSelect }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [heatmapPoints, setHeatmapPoints] = useState([]);
+  const [regions, setRegions] = useState([]);
   const mapRef = useRef(null);
 
   // India's center coordinates
@@ -131,6 +195,66 @@ const MisinformationHeatmap = () => {
     [11.9416, 79.8083, 0.55], // Pondicherry
   ];
 
+  // Define major regions with metadata for markers
+  const majorRegions = [
+    { 
+      name: "Delhi",
+      lat: 28.7041,
+      lng: 77.1025,
+      urgency: "critical",
+      description: "High misinformation about elections and vaccines"
+    },
+    { 
+      name: "Mumbai",
+      lat: 19.0760,
+      lng: 72.8777,
+      urgency: "high",
+      description: "Financial scams and housing market rumors"
+    },
+    { 
+      name: "Bangalore",
+      lat: 12.9716,
+      lng: 77.5946,
+      urgency: "medium",
+      description: "Tech-related misinformation"
+    },
+    { 
+      name: "Kolkata",
+      lat: 22.5726,
+      lng: 88.3639,
+      urgency: "medium",
+      description: "Political news manipulation"
+    },
+    { 
+      name: "Chennai",
+      lat: 13.0827,
+      lng: 80.2707,
+      urgency: "medium",
+      description: "Film industry rumors"
+    },
+    { 
+      name: "Hyderabad",
+      lat: 17.3850,
+      lng: 78.4867,
+      urgency: "medium",
+      description: "Tech and political rumors"
+    },
+    { 
+      name: "Lucknow",
+      lat: 26.8467,
+      lng: 80.9462,
+      urgency: "high",
+      description: "Maha Kumbh Mela misinformation"
+    },
+    { 
+      name: "Srinagar",
+      lat: 34.0837,
+      lng: 74.7973,
+      urgency: "critical",
+      description: "False claims during diplomatic tensions"
+    }
+  ];
+
   useEffect(() => {
     // Import leaflet.heat dynamically to ensure it's available
     const loadHeatPlugin = async () => {
@@ -142,6 +266,7 @@ const MisinformationHeatmap = () => {
         
         // Using sample data for now
         setHeatmapPoints(sampleMisinformationData);
+        setRegions(majorRegions);
       } catch (error) {
         console.error("Error loading heat plugin:", error);
         setError("Failed to load heatmap plugin");
@@ -194,7 +319,10 @@ const MisinformationHeatmap = () => {
   return (
     <div className="relative flex flex-col rounded-xl bg-transparent p-4 shadow-2xl z-0 h-[500px]">
       <h3 className="text-xl font-bold text-white mb-4">Misinformation Spread Heatmap</h3>
-      <div className="text-sm text-gray-400 mb-2">Showing high-risk areas for misinformation across India</div>
+      <div className="text-sm text-gray-400 mb-2 flex items-center">
+        <AlertCircle size={14} className="text-purple-500 mr-1" />
+        <span>Click on city markers to view detailed misinformation insights</span>
+      </div>
       
       <MapContainer
         center={indiaCenter}
@@ -213,6 +341,7 @@ const MisinformationHeatmap = () => {
         />
         
         <HeatLayer points={heatmapPoints} />
+        <RegionMarkers regions={regions} onRegionSelect={onRegionSelect} />
       </MapContainer>
       
       <div className="absolute bottom-4 right-4 bg-black/70 p-2 rounded-md z-10">
