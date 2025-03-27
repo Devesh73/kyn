@@ -12,7 +12,7 @@ const Header = () => {
 
   return (
     <header
-      className="text-white py-4"
+      className="text-white py-2"
       style={{
         background: 'linear-gradient(to right, #4b0082, #800080, #6a0dad)',
       }}

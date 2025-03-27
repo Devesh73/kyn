@@ -70,7 +70,7 @@ const GeographicInsights = () => {
   }
 
   return (
-    <div className="relative flex flex-col rounded-xl bg-slate-950 p-4 shadow-2xl z-0 h-[590px]">
+    <div className="relative flex flex-col rounded-xl bg-transparent p-4 shadow-2xl z-0 h-[500px]">
       <MapContainer
         center={[0, 0]}
         zoom={2}

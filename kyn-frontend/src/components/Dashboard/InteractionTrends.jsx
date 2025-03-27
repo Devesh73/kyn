@@ -100,7 +100,7 @@ const InteractionTrends = () => {
   };
 
   return (
-    <div className="relative flex flex-col rounded-xl bg-slate-950 p-4 shadow-2xl h-[500px]">
+    <div className="relative flex flex-col rounded-xl bg-transparent p-4 shadow-2xl h-[500px]">
       {/* Title */}
       <h2 className="text-2xl font-semibold text-white mb-4">Interaction Trends</h2>
       {aggregatedTrends.length > 0 ? (

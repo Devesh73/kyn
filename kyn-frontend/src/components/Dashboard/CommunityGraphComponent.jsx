@@ -180,7 +180,7 @@ const CommunityGraphComponent = () => {
   }
 
   return (
-    <div className="bg-slate-950 p-6">
+    <div className="bg-transparent p-6">
       <h2 className="text-center text-2xl text-white mb-4">Community Graph</h2>
 
       {/* Dropdown for selecting communities */}

@@ -11,7 +11,7 @@ BASE_API_URL = "http://127.0.0.1:5000/api"
 
 
 # Configure Gemini SDK
-genai.configure(api_key=API_KEY)
+genai.configure(api_key="AIzaSyBBRPQeujiWKVfbAWKmOkFQJOQBJ30ekWc")
 generation_config = {
     "temperature": 0.7,
     "top_p": 0.9,

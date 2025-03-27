@@ -20,6 +20,7 @@
     "firebase": "^11.1.0",
     "kyn": "file:",
     "leaflet": "^1.9.4",
+    "lucide-react": "^0.484.0",
     "neo4j-driver": "^5.27.0",
     "neovis.js": "^2.1.0",
     "qrcode": "^1.5.4",
