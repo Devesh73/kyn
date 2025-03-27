@@ -1,26 +1,26 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ChatBotContainer from "../components/ChatBotContainer";
-import InfluenceAnalysisCard from "../components/Dashboard/InfluenceAnalysisCard";
-import TrendingInterestsCard from "../components/Dashboard/TrendingInterestsCard";
 import InteractionTrends from "../components/Dashboard/InteractionTrends";
-import ActiveCommunities from "../components/Dashboard/ActiveCommunities";
-import GeographicInsights from "../components/Dashboard/GeographicInsights";
+import MisinformationHeatmap from "../components/Dashboard/MisinformationHeatmap";
 import CommunityGraphComponent from "../components/Dashboard/CommunityGraphComponent";
+import HorizontalNavigation from "../components/Layout/HorizontalNavigation";
 import VerticalTabsComponent from "../components/VerticalTabsComponent";
-import { TrendingUp, Users, User } from "lucide-react"; // Import Lucide icons
+import { TrendingUp, Users, User } from "lucide-react";
+import MisinformationTrendsChart from "../components/Dashboard/MisinformationTrendsChart";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [apiData, setApiData] = useState(null);
+  const [activeTab, setActiveTab] = useState("overview");
 
-  // Define tabs for the vertical tab component
+  // Define tabs for the vertical tab component within Influencer Insights section
   const insightTabs = [
     { id: "trending", label: "Trending Interests" },
     { id: "communities", label: "Active Communities" },
     { id: "influence", label: "Influence Analysis" },
-  ];
+  ]
 
   const fetchData = async () => {
     try {
@@ -58,8 +58,103 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  // Render the content based on active tab
+  const renderContent = () => {
+    switch (activeTab) {
+      case "overview":
+        return (
+          <div className="space-y-6">
+            {/* Top Row - InteractionTrends and MisinformationTrendsChart side by side */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <InteractionTrends />
+              <MisinformationTrendsChart />
+            </div>
+            
+            {/* Misinformation Heatmap */}
+            <div>
+              <MisinformationHeatmap />
+            </div>
+          </div>
+        );
+      
+      case "community":
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">Community Health</h2>
+            <CommunityGraphComponent />
+          </div>
+        );
+        
+      case "misinformation":
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">Misinformation Tracker</h2>
+            <MisinformationHeatmap />
+          </div>
+        );
+        
+      case "influencer":
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">Influencer Insights</h2>
+            {/* Moved VerticalTabsComponent here from Overview tab */}
+            <VerticalTabsComponent tabs={insightTabs} defaultTab="trending">
+              <VerticalTabsComponent.TabContent tabId="trending">
+                <div className="w-full">
+                  <h3 className="text-xl font-bold text-white mb-4">Trending Interests</h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    <TrendingInterestsTiles />
+                  </div>
+                </div>
+              </VerticalTabsComponent.TabContent>
+              
+              <VerticalTabsComponent.TabContent tabId="communities">
+                <div className="w-full">
+                  <h3 className="text-xl font-bold text-white mb-4">Active Communities</h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    <ActiveCommunitiesTiles />
+                  </div>
+                </div>
+              </VerticalTabsComponent.TabContent>
+              
+              <VerticalTabsComponent.TabContent tabId="influence">
+                <div className="w-full">
+                  <h3 className="text-xl font-bold text-white mb-4">Influence Analysis</h3>
+                  <div className="grid grid-cols-1 gap-4">
+                    <InfluenceAnalysisTiles />
+                  </div>
+                </div>
+              </VerticalTabsComponent.TabContent>
+            </VerticalTabsComponent>
+          </div>
+        );
+        
+      case "regional":
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">Regional Focus</h2>
+            <GeographicInsights />
+          </div>
+        );
+        
+      case "chat":
+        return (
+          <div className="h-full flex items-center justify-center">
+            <p className="text-white text-xl">The chatbot is available in the bottom right corner</p>
+          </div>
+        );
+        
+      default:
+        return (
+          <div>
+            <h2 className="text-2xl font-bold text-white mb-6">Page Not Found</h2>
+          </div>
+        );
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-black text-gray-800 relative">
+    <div className="min-h-screen bg-black text-gray-800 flex flex-col">
       {/* Loading Pop-Up */}
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
@@ -89,56 +184,19 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Dashboard Layout */}
-      <div className="container mx-auto p-5 grid grid-cols-1 gap-6">
-        {/* Top Row - InteractionTrends and GeographicInsights side by side */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <InteractionTrends />
-          <GeographicInsights />
-        </div>
+      {/* Main Layout with Horizontal Navigation and Content */}
+      <div className="flex flex-col flex-1 overflow-hidden">
+        {/* Top Navigation */}
+        <HorizontalNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
         
-        {/* Middle Row - Cards with vertical tabs using the new component */}
-        <div>
-          <VerticalTabsComponent tabs={insightTabs} defaultTab="trending">
-            <VerticalTabsComponent.TabContent tabId="trending">
-              <div className="w-full">
-                <h3 className="text-xl font-bold text-white mb-4">Trending Interests</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  <TrendingInterestsTiles />
-                </div>
-              </div>
-            </VerticalTabsComponent.TabContent>
-            
-            <VerticalTabsComponent.TabContent tabId="communities">
-              <div className="w-full">
-                <h3 className="text-xl font-bold text-white mb-4">Active Communities</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  <ActiveCommunitiesTiles />
-                </div>
-              </div>
-            </VerticalTabsComponent.TabContent>
-            
-            <VerticalTabsComponent.TabContent tabId="influence">
-              <div className="w-full">
-                <h3 className="text-xl font-bold text-white mb-4">Influence Analysis</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  <InfluenceAnalysisTiles />
-                </div>
-              </div>
-            </VerticalTabsComponent.TabContent>
-          </VerticalTabsComponent>
-        </div>
-
-        {/* Bottom Row - Community Graph */}
-        <div>
-          <CommunityGraphComponent />
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-auto p-6 bg-black">
+          {renderContent()}
         </div>
       </div>
 
-      {/* Collapsible Chatbot */}
-      <div className="min-h-scree relative">
-        <ChatBotContainer />
-      </div>
+      {/* Chatbot */}
+      <ChatBotContainer />
     </div>
   );
 };
