@@ -81,32 +81,32 @@ const Dashboard = () => {
       )}
 
       {/* Dashboard Layout */}
-      <div className="container mx-auto p-5 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column */}
-        <div className="space-y-6">
+      <div className="container mx-auto p-5 grid grid-cols-1 gap-6">
+        {/* Top Row - InteractionTrends and GeographicInsights side by side */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <InteractionTrends />
+          <GeographicInsights />
+        </div>
+        
+        {/* Middle Row - Cards arranged horizontally */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <TrendingInterestsCard />
           <ActiveCommunities />
           <InfluenceAnalysisCard />
         </div>
 
-        {/* Right Column */}
-        <div className="col-span-2 grid grid-rows-2 gap-6">
-            <InteractionTrends />
-            <GeographicInsights />
-        </div>  
-
-        {/* Bottom Row */}
-        <div className="col-span-3 gap-6">
-            <CommunityGraphComponent />
+        {/* Bottom Row - Community Graph */}
+        <div className="col-span-1">
+          <CommunityGraphComponent />
         </div>
       </div>
 
-    {/* Collapsible Chatbot */}
+      {/* Collapsible Chatbot */}
       <div className="min-h-scree relative">
         <ChatBotContainer />
       </div>
     </div>
   );
-};
+}
 export default Dashboard;
 
