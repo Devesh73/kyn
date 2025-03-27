@@ -12,6 +12,7 @@ import MisinformationTrendsChart from "../components/Dashboard/MisinformationTre
 import MisinformationInsights from "../components/Dashboard/MisinformationInsights";
 import ReactMarkdown from 'react-markdown';
 import rehypeRaw from 'rehype-raw';
+import NewsAnalysis from "../components/Dashboard/NewsAnalysis";
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,9 @@ const Dashboard = () => {
   const [chatbotInput, setChatbotInput] = useState("");
   const [selectedRegion, setSelectedRegion] = useState(null);
   const [selectedNews, setSelectedNews] = useState(null);
+  const [trendingSummary, setTrendingSummary] = useState(null);
+  const [communitySummary, setCommunitySummary] = useState(null);
+  const [influencerSummary, setInfluencerSummary] = useState(null);
 
   // Define tabs for the vertical tab component within Influencer Insights section
   const insightTabs = [
@@ -66,6 +70,37 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchSummaryData = async () => {
+      try {
+        const [trendingRes, communitiesRes, influencersRes] = await Promise.all([
+          axios.get("/api/trending-interests"),
+          axios.get("/api/active-communities"),
+          axios.get("/api/influence-analysis"),
+        ]);
+
+        if (trendingRes.data.trending_interests?.length > 0) {
+          setTrendingSummary(trendingRes.data.trending_interests[0]);
+        }
+
+        if (communitiesRes.data.active_communities?.length > 0) {
+          setCommunitySummary(communitiesRes.data.active_communities[0]);
+        }
+
+        if (influencersRes.data.top_influencers?.length > 0) {
+          setInfluencerSummary({
+            userId: influencersRes.data.top_influencers[0][0],
+            centrality: influencersRes.data.top_influencers[0][1]
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching summary data:", error);
+      }
+    };
+
+    fetchSummaryData();
+  }, []);
+
   // Render the content based on active tab
   const renderContent = () => {
     switch (activeTab) {
@@ -93,13 +128,8 @@ const Dashboard = () => {
           </div>
         );
       
-      case "community":
-        return (
-          <div>
-            <h2 className="text-2xl font-bold text-white mb-6">Community Health</h2>
-            <CommunityGraphComponent />
-          </div>
-        );
+      case "news": // New case for the News Analysis tab
+        return <NewsAnalysis />;
         
       case "misinformation":
         return (
@@ -165,8 +195,73 @@ const Dashboard = () => {
       case "influencer":
         return (
           <div>
-            {/* <h2 className="text-2xl font-bold text-white mb-6">Influencer Insights</h2> */}
-            {/* Moved VerticalTabsComponent here from Overview tab */}
+            <h2 className="text-2xl font-bold text-white mb-6">Community Insights</h2>
+            
+            {/* Summary Cards - styled like UrgentInsightsWidget */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+              {/* Trending Interests Summary Card */}
+              <div className="bg-gradient-to-br from-black to-emerald-950/80 rounded-lg overflow-hidden shadow-lg border border-emerald-900/50 p-2">
+                <div className="flex items-center justify-between bg-black/80 p-2">
+                  <h3 className="text-white text-xs font-medium">Top Trending Interest</h3>
+                  <div className="bg-slate-800 p-1.5 rounded-full">
+                    <TrendingUp size={14} className="text-emerald-500" />
+                  </div>
+                </div>
+                <div className="p-2 border-t border-emerald-900/20">
+                  {trendingSummary ? (
+                    <>
+                      <h4 className="text-white font-medium">{trendingSummary.interest}</h4>
+                      <p className="text-emerald-500 text-sm">{trendingSummary.count} mentions</p>
+                    </>
+                  ) : (
+                    <p className="text-gray-400 text-sm">Loading trending data...</p>
+                  )}
+                </div>
+              </div>
+              
+              {/* Active Communities Summary Card */}
+              <div className="bg-gradient-to-br from-black to-cyan-950/80 rounded-lg overflow-hidden shadow-lg border border-cyan-900/50 p-2">
+                <div className="flex items-center justify-between bg-black/80 p-2">
+                  <h3 className="text-white text-xs font-medium">Most Active Community</h3>
+                  <div className="bg-slate-800 p-1.5 rounded-full">
+                    <Users size={14} className="text-cyan-500" />
+                  </div>
+                </div>
+                <div className="p-2 border-t border-cyan-900/20">
+                  {communitySummary ? (
+                    <>
+                      <h4 className="text-white font-medium">Community {communitySummary.community_id}</h4>
+                      <p className="text-cyan-500 text-sm">Activity: {(communitySummary.activity_score)/10}%</p>
+                      <p className="text-indigo-400 text-sm">Size: {communitySummary.size} members</p>
+                    </>
+                  ) : (
+                    <p className="text-gray-400 text-sm">Loading community data...</p>
+                  )}
+                </div>
+              </div>
+              
+              {/* Top Influencer Summary Card */}
+              <div className="bg-gradient-to-br from-black to-purple-950/80 rounded-lg overflow-hidden shadow-lg border border-purple-900/50 p-2">
+                <div className="flex items-center justify-between bg-black/80 p-2">
+                  <h3 className="text-white text-xs font-medium">Top Influencer</h3>
+                  <div className="bg-slate-800 p-1.5 rounded-full">
+                    <User size={14} className="text-purple-500" />
+                  </div>
+                </div>
+                <div className="p-2 border-t border-purple-900/20">
+                  {influencerSummary ? (
+                    <>
+                      <h4 className="text-white font-medium">User {influencerSummary.userId}</h4>
+                      <p className="text-purple-500 text-sm">Influence: {(influencerSummary.centrality*100).toFixed(2)}%</p>
+                    </>
+                  ) : (
+                    <p className="text-gray-400 text-sm">Loading influencer data...</p>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            {/* Vertical Tabs Component */}
             <VerticalTabsComponent tabs={insightTabs} defaultTab="trending">
               <VerticalTabsComponent.TabContent tabId="trending">
                 <div className="w-full">
@@ -195,6 +290,12 @@ const Dashboard = () => {
                 </div>
               </VerticalTabsComponent.TabContent>
             </VerticalTabsComponent>
+            
+            {/* Community Graph below vertical tabs */}
+            <div className="mt-6">
+              {/* <h3 className="text-xl font-bold text-white mb-4">Community Network Graph</h3> */}
+              <CommunityGraphComponent />
+            </div>
           </div>
         );
         

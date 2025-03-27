@@ -12,7 +12,7 @@ const Header = () => {
 
   return (
     <header
-      className="text-white py-2 bg-violet-800 backdrop-blur-sm border-b border-gray-800/60"
+      className="text-white py-2 bg-purple-900 backdrop-blur-sm border-b border-gray-800/60"
     >
       <div className="container mx-auto flex justify-between items-center px-4">
         {/* Logo Image */}
