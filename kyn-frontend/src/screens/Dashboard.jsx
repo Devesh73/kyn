@@ -11,7 +11,7 @@ import { TrendingUp, Users, User } from "lucide-react";
 import MisinformationTrendsChart from "../components/Dashboard/MisinformationTrendsChart";
 import MisinformationInsights from "../components/Dashboard/MisinformationInsights";
 import ReactMarkdown from 'react-markdown';
-
+import rehypeRaw from 'rehype-raw';
 
 const Dashboard = () => {
   const [loading, setLoading] = useState(true);
@@ -104,7 +104,7 @@ const Dashboard = () => {
       case "misinformation":
         return (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-6">Misinformation Tracker</h2>
+            {/* <h2 className="text-2xl font-bold text-white mb-6">Misinformation Tracker</h2> */}
             <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
               {/* Map takes up 3/5 of the width */}
               <div className="lg:col-span-3">
@@ -129,8 +129,18 @@ const Dashboard = () => {
                   {selectedNews ? selectedNews.title : "Select a news item to analyze"}
                 </h3>
                 {selectedNews ? (
-                  <div className="prose prose-invert prose-sm max-w-none text-gray-300">
-                    <ReactMarkdown>
+                  <div className="markdown-content prose prose-invert prose-headings:text-white prose-headings:font-bold prose-h2:text-xl prose-h3:text-lg prose-h4:text-base prose-p:text-gray-300 prose-strong:text-white prose-ul:text-gray-300 prose-ol:text-gray-300 prose-li:my-0 max-w-none">
+                    <ReactMarkdown
+                      rehypePlugins={[rehypeRaw]}
+                      components={{
+                        h2: ({node, ...props}) => <h2 className="text-xl font-bold text-white mt-6 mb-3" {...props} />,
+                        h3: ({node, ...props}) => <h3 className="text-lg font-bold text-violet-300 mt-4 mb-2" {...props} />,
+                        ul: ({node, ...props}) => <ul className="list-disc ml-6 my-2 text-gray-300" {...props} />,
+                        ol: ({node, ...props}) => <ol className="list-decimal ml-6 my-2 text-gray-300" {...props} />,
+                        li: ({node, ...props}) => <li className="my-1" {...props} />,
+                        p: ({node, ...props}) => <p className="my-2 text-gray-300" {...props} />
+                      }}
+                    >
                       {selectedNews.content}
                     </ReactMarkdown>
                   </div>

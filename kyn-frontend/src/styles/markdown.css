@@ -1,0 +1,59 @@
+/* Markdown content styling */
+.markdown-content h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: white;
+}
+
+.markdown-content h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+  color: #a78bfa; /* violet-400 */
+}
+
+.markdown-content ul {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #d1d5db; /* gray-300 */
+}
+
+.markdown-content ol {
+  list-style-type: decimal;
+  margin-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-content li {
+  margin: 0.25rem 0;
+}
+
+.markdown-content p {
+  margin: 0.75rem 0;
+  color: #d1d5db; /* gray-300 */
+}
+
+.markdown-content strong,
+.markdown-content b {
+  font-weight: 700;
+  color: white;
+}
+
+.markdown-content em,
+.markdown-content i {
+  font-style: italic;
+}
+
+.markdown-content code {
+  font-family: monospace;
+  background-color: rgba(55, 65, 81, 0.5); /* gray-700 with opacity */
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
