@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ChatBotContainer from "../components/ChatBotContainer";
+import UrgentInsightsWidget from "../components/UrgentInsightsWidget";
 import InteractionTrends from "../components/Dashboard/InteractionTrends";
 import MisinformationHeatmap from "../components/Dashboard/MisinformationHeatmap";
 import CommunityGraphComponent from "../components/Dashboard/CommunityGraphComponent";
@@ -14,6 +15,8 @@ const Dashboard = () => {
   const [dataLoaded, setDataLoaded] = useState(false);
   const [apiData, setApiData] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [chatbotCollapsed, setChatbotCollapsed] = useState(true);
+  const [chatbotInput, setChatbotInput] = useState("");
 
   // Define tabs for the vertical tab component within Influencer Insights section
   const insightTabs = [
@@ -96,7 +99,7 @@ const Dashboard = () => {
       case "influencer":
         return (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-6">Influencer Insights</h2>
+            {/* <h2 className="text-2xl font-bold text-white mb-6">Influencer Insights</h2> */}
             {/* Moved VerticalTabsComponent here from Overview tab */}
             <VerticalTabsComponent tabs={insightTabs} defaultTab="trending">
               <VerticalTabsComponent.TabContent tabId="trending">
@@ -195,8 +198,19 @@ const Dashboard = () => {
         </div>
       </div>
 
+      {/* Urgent Insights Widget */}
+      <UrgentInsightsWidget 
+        setChatbotCollapsed={setChatbotCollapsed} 
+        setInputValue={setChatbotInput}
+      />
+
       {/* Chatbot */}
-      <ChatBotContainer />
+      <ChatBotContainer 
+        collapsed={chatbotCollapsed}
+        setCollapsed={setChatbotCollapsed}
+        inputValue={chatbotInput}
+        setInputValue={setChatbotInput}
+      />
     </div>
   );
 };

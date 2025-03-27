@@ -2,15 +2,27 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import { MessageSquare, Send, Plus, X } from "lucide-react";
 
-const ChatBotContainer = () => {
+const ChatBotContainer = ({ 
+  collapsed: externalCollapsed, 
+  setCollapsed: setExternalCollapsed,
+  inputValue: externalInputValue,
+  setInputValue: setExternalInputValue
+}) => {
   const [messages, setMessages] = useState([
     { text: "Hello, **How can I help you today?**", sender: "bot" },
   ]);
-  const [input, setInput] = useState("");
-  const [chatbotCollapsed, setChatbotCollapsed] = useState(true);
+  // Use external state if provided, otherwise use internal state
+  const [chatbotCollapsed, setChatbotCollapsedInternal] = useState(true);
+  const [input, setInputInternal] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
+  
+  // Use external or internal state based on what's provided
+  const chatbotCollapsedValue = externalCollapsed !== undefined ? externalCollapsed : chatbotCollapsed;
+  const setChatbotCollapsed = setExternalCollapsed || setChatbotCollapsedInternal;
+  const inputValue = externalInputValue !== undefined ? externalInputValue : input;
+  const setInput = setExternalInputValue || setInputInternal;
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -18,17 +30,17 @@ const ChatBotContainer = () => {
 
   useEffect(() => {
     scrollToBottom();
-    if (!chatbotCollapsed && inputRef.current) {
+    if (!chatbotCollapsedValue && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [messages, chatbotCollapsed]);
+  }, [messages, chatbotCollapsedValue]);
 
   const handleSend = async (e) => {
     e.preventDefault();
-    if (input.trim()) {
+    if (inputValue.trim()) {
       setMessages((prevMessages) => [
         ...prevMessages,
-        { text: input, sender: "user" },
+        { text: inputValue, sender: "user" },
       ]);
       setInput("");
 
@@ -40,7 +52,7 @@ const ChatBotContainer = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ message: input }),
+          body: JSON.stringify({ message: inputValue }),
         });
         const data = await response.json();
         setMessages((prevMessages) => [
@@ -61,11 +73,11 @@ const ChatBotContainer = () => {
 
   return (
     <div
-      className={`fixed z-50 transition-transform bg-slate-950/90 text-zinc-100 shadow-xl ${
-        chatbotCollapsed ? "bottom-6 right-6 h-14 w-14 rounded-full" : "bottom-6 right-6 h-[750px] w-[600px] rounded-2xl"
+      className={`fixed z-50 transition-transform bg-violet-900/95 text-zinc-100 shadow-xl ${
+        chatbotCollapsedValue ? "bottom-6 right-6 h-14 w-14 rounded-full" : "bottom-6 right-6 h-[750px] w-[600px] rounded-2xl"
       } overflow-hidden`}
     >
-      {chatbotCollapsed ? (
+      {chatbotCollapsedValue ? (
         // Collapsed state - just show the icon button
         <button
           onClick={() => setChatbotCollapsed(false)}
@@ -165,13 +177,13 @@ const ChatBotContainer = () => {
                 type="text"
                 className="flex-1 bg-transparent text-zinc-100 placeholder-zinc-400 focus:outline-none"
                 placeholder="Type your message..."
-                value={input}
+                value={inputValue}
                 onChange={(e) => setInput(e.target.value)}
               />
               <button
                 type="submit"
                 className="text-zinc-400 hover:text-zinc-100 transition-colors disabled:opacity-50"
-                disabled={isLoading || !input.trim()}
+                disabled={isLoading || !inputValue.trim()}
                 aria-label="Send message"
               >
                 {isLoading ? 
