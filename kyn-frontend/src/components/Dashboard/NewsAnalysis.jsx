@@ -34,6 +34,130 @@ const NewsAnalysis = () => {
     return new Date(year, month, 0).getDate();
   }, [year, month]);
   
+  // Sample news articles for specific dates
+  const sampleNewsArticlesByDate = {
+    // January 5, 2025
+    "2025-01-05": [
+      {
+        id: 5001,
+        title: "Housing Market Collapse Rumors",
+        source: "Financial Express Daily",
+        timestamp: "2025-01-05T13:30:00",
+        isMisinformation: true,
+        category: "Economy",
+        region: "Mumbai",
+        summary: "False claims about imminent real estate market crash affecting property investments.",
+        urgency: "high"
+      },
+      {
+        id: 5002,
+        title: "Maha Kumbh Mela Misinformation",
+        source: "Religious Affairs Monitor",
+        timestamp: "2025-01-05T15:45:00",
+        isMisinformation: true,
+        category: "Culture",
+        region: "Lucknow",
+        summary: "False claims about event safety and logistics affecting religious gathering.",
+        urgency: "high"
+      },
+      {
+        id: 5003,
+        title: "Annual Economic Report Released by Finance Ministry",
+        source: "Economic Times",
+        timestamp: "2025-01-05T10:00:00",
+        isMisinformation: false,
+        category: "Economy",
+        region: "National",
+        summary: "The Finance Ministry released its annual economic report highlighting growth projections and fiscal policy directions for the upcoming year."
+      }
+    ],
+    
+    // January 10, 2025
+    "2025-01-10": [
+      {
+        id: 10001,
+        title: "COVID-19 Vaccine Rumors",
+        source: "Health Freedom Network",
+        timestamp: "2025-01-10T09:20:00",
+        isMisinformation: true,
+        category: "Health",
+        region: "Delhi",
+        summary: "Dangerous health misinformation regarding vaccine side effects.",
+        urgency: "critical"
+      },
+      {
+        id: 10002,
+        title: "New COVID-19 Variant Identified in Research Lab",
+        source: "Medical Research Journal",
+        timestamp: "2025-01-10T11:45:00",
+        isMisinformation: false,
+        category: "Health",
+        region: "National",
+        summary: "Researchers at the National Institute of Virology have identified a new variant of COVID-19, but note it appears to cause milder symptoms than previous strains."
+      }
+    ],
+    
+    // January 15, 2025
+    "2025-01-15": [
+      {
+        id: 15001,
+        title: "Delhi Election Misinformation",
+        source: "Delhi Politics Today",
+        timestamp: "2025-01-15T14:30:00",
+        isMisinformation: true,
+        category: "Politics",
+        region: "Delhi",
+        summary: "False claims about electoral irregularities spreading on social media.",
+        urgency: "high"
+      },
+      {
+        id: 15002,
+        title: "Election Commission Announces Vote Counting Procedures",
+        source: "Delhi Electoral Office",
+        timestamp: "2025-01-15T10:15:00",
+        isMisinformation: false,
+        category: "Politics",
+        region: "Delhi",
+        summary: "The Election Commission has announced enhanced transparency measures for the upcoming vote counting process, including live CCTV feeds and party representative access."
+      }
+    ],
+    
+    // January 18, 2025
+    "2025-01-18": [
+      {
+        id: 18001,
+        title: "Financial Scam Warnings",
+        source: "Financial Regulatory Authority",
+        timestamp: "2025-01-18T11:20:00",
+        isMisinformation: true,
+        category: "Finance",
+        region: "Mumbai",
+        summary: "Emerging misinformation trend on financial scams targeting urban professionals.",
+        urgency: "medium"
+      },
+      {
+        id: 18002,
+        title: "THousing Market Collapse Rumors",
+        source: "Business Insider India",
+        timestamp: "2025-01-18T09:30:00",
+        isMisinformation: false,
+        category: "Business",
+        region: "Mumbai",
+        summary: "False claims about imminent real estate market crash affecting property investments"
+      },
+      {
+        id: 18002,
+        title: "Tech Startup Secures Record Funding",
+        source: "Business Insider India",
+        timestamp: "2025-01-18T09:30:00",
+        isMisinformation: false,
+        category: "Business",
+        region: "Bangalore",
+        summary: "A Bangalore-based AI startup has secured $200 million in Series C funding, marking the largest investment round for an Indian tech company this year."
+      }
+    ]
+  };
+  
   // Sample news articles for the first 5 days
   const sampleNewsArticlesByDay = {
     // Day 1 news
@@ -204,12 +328,19 @@ const NewsAnalysis = () => {
   useEffect(() => {
     // Simulating API call to fetch news articles for selected date
     setLoading(true);
+    
+    // Format the date string for lookup in sampleNewsArticlesByDate
+    const dateString = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+    
     setTimeout(() => {
-      if (day <= 5) {
-        // Use unique news for first 5 days
+      // First check if we have specific data for this exact date
+      if (sampleNewsArticlesByDate[dateString]) {
+        setNewsArticles(sampleNewsArticlesByDate[dateString]);
+      } else if (day <= 5) {
+        // If not, use the day-based samples for first 5 days
         setNewsArticles(sampleNewsArticlesByDay[day] || []);
       } else {
-        // Use default news for other days
+        // Otherwise use default news
         setNewsArticles(defaultDayNews);
       }
       setLoading(false);
@@ -238,6 +369,20 @@ const NewsAnalysis = () => {
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  // Function to get urgency class styles
+  const getUrgencyStyles = (urgency) => {
+    switch (urgency) {
+      case 'critical':
+        return 'bg-red-900/30 text-red-400';
+      case 'high':
+        return 'bg-amber-900/30 text-amber-400';
+      case 'medium':
+        return 'bg-yellow-900/30 text-yellow-400';
+      default:
+        return 'bg-emerald-900/30 text-emerald-400';
+    }
   };
 
   return (
@@ -395,14 +540,22 @@ const NewsAnalysis = () => {
                       <div className="pl-8">
                         <p className="text-gray-300 text-sm">{article.summary}</p>
                         <div className="flex items-center justify-between mt-2">
-                          <span className={`
-                            text-xs px-2 py-1 rounded-full
-                            ${article.isMisinformation 
-                              ? 'bg-amber-900/30 text-amber-400' 
-                              : 'bg-emerald-900/30 text-emerald-400'}
-                          `}>
-                            {article.isMisinformation ? 'Misinformation' : 'Verified Content'}
-                          </span>
+                          <div className="flex items-center space-x-2">
+                            <span className={`
+                              text-xs px-2 py-1 rounded-full
+                              ${article.isMisinformation 
+                                ? 'bg-amber-900/30 text-amber-400' 
+                                : 'bg-emerald-900/30 text-emerald-400'}
+                            `}>
+                              {article.isMisinformation ? 'Misinformation' : 'Verified Content'}
+                            </span>
+                            
+                            {article.urgency && (
+                              <span className={`text-xs px-2 py-1 rounded-full ${getUrgencyStyles(article.urgency)}`}>
+                                {article.urgency.charAt(0).toUpperCase() + article.urgency.slice(1)} Priority
+                              </span>
+                            )}
+                          </div>
                           <span className="text-xs text-gray-500">Category: {article.category}</span>
                         </div>
                       </div>
