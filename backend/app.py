@@ -60,13 +60,13 @@ def build_graph_from_files(users_file=USERS_FILE, interactions_file=INTERACTIONS
         users_data = load_data_from_file(users_file)
         users = users_data.get("users", [])
         print("Loaded users snippets:")
-        print("Users:", users[:2])  # Print first 2 users
+        # print("Users:", users[:2])  # Print first 2 users
 
         # Load interactions data from file
         interactions_data = load_data_from_file(interactions_file)
         interactions = interactions_data.get("interactions", [])
         print("Loaded interactions snippets:")
-        print("Interactions:", interactions[:2])  # Print first 2 interactions
+        # print("Interactions:", interactions[:2])  # Print first 2 interactions
 
         graph = nx.Graph()
 
