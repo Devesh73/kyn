@@ -259,6 +259,55 @@ def influence_analysis():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/misinformation-communities", methods=["GET"])
+def misinformation_communities():
+    """
+    Identify communities spreading misinformation, the users responsible,
+    and the regions affected.
+    """
+    try:
+        # Sample data about misinformation - in a real system this would be derived
+        # from analysis of actual content and network structure
+
+        data = {
+            "misinformation_data": [
+                {
+                    "news": "Financial Scam Warnings",
+                    "location": "Mumbai",
+                    "summary": "Recent social media trends indicate a rise in misinformation regarding financial scams targeting urban professionals in Mumbai. The misinformation includes false alerts about specific banks facing imminent collapse, fabricated investment schemes claiming government backing, and misleading tax policy information affecting salaried employees. It originated from anonymous Telegram channels posing as financial insiders, spread initially through WhatsApp groups of corporate employees, and was amplified by financial influencers with over 100K followers. The Reserve Bank of India and SEBI issued clarifications to debunk these claims. This has led to multiple fraud cases as people sought alternative investments, temporary banking service disruptions due to panic withdrawals, and heightened financial anxiety among middle-class professionals. Recommended actions include coordinating with financial institutions for clear communication, launching a targeted social media campaign with accurate guidance, and publishing scam case studies.",
+                    "potential_flagged_sources": "User ID: u742",
+                    "source_communities": "community 3",
+                },
+                {
+                    "news": "Delhi Election Misinformation",
+                    "location": "Delhi",
+                    "summary": "Multiple social media platforms have been flooded with false claims about electoral irregularities in Delhi's recent assembly elections. The misinformation suggests tampered Electronic Voting Machines (EVMs), voter suppression of certain demographics, and manipulated vote counts during transmission. It began with a video of a malfunctioning EVM from a routine test, shared by @DelhiTruthSeeker with misleading context, and reached 2.5 million views after amplification by three political figures. The Election Commission clarified the video was from a training session, not the election. This has sparked public demonstrations in three constituencies, reduced voter trust per post-election surveys, and drawn international media scrutiny. Recommended actions include immediate fact-checking distribution, targeted communication to affected areas, and engagement with community leaders to rebuild trust.",
+                    "potential_flagged_sources": "User ID: u319",
+                    "source_communities": "community 7",
+                },
+                {
+                    "news": "COVID-19 Vaccine Misinformation Analysis",
+                    "location": "Delhi",
+                    "summary": "A coordinated campaign in Delhi is spreading dangerous misinformation about severe side effects of the latest COVID-19 booster vaccines, claiming they cause a new virus variant, severe neurological issues, and that the government is hiding thousands of deaths. It originated from an edited video of out-of-context medical conference clips, first appearing on alternative video platforms before hitting mainstream social media, amplified by health and wellness accounts with a combined 7.3M followers. Fact-checking organizations and the Health Ministry have issued rebuttals. This has caused a 35% drop in vaccine bookings in Delhi NCR, reports of people seeking harmful 'detox' treatments, and increased hostility toward healthcare workers. Recommended actions include a public health messaging campaign, engagement with medical professionals, and requesting content removal from platforms.",
+                    "potential_flagged_sources": "User ID: u568",
+                    "source_communities": "community 9",
+                },
+                {
+                    "news": "Maha Kumbh Mela Misinformation",
+                    "location": "Lucknow",
+                    "summary": "In January 2025, posts on X and mainstream media spread false claims about the Maha Kumbh Mela in Prayagraj, near Lucknow, causing confusion and safety concerns. The misinformation included fabricated reports of bridge collapses, severe water contamination, stampedes with casualties, and exaggerated crowd size estimates fueling panic. It stemmed from edited images from past events shared as current by unverified news accounts, amplified by domestic and international media. The Uttar Pradesh government debunked it, taking action against 101 social media accounts. This led to reduced pilgrim attendance, widespread panic among attendees and families, resource diversion to counter false narratives, and economic losses for local businesses. Recommended actions include establishing a real-time information verification center, deploying official photographers, coordinating with media for responsible reporting, and issuing regular updates.",
+                    "potential_flagged_sources": "User ID: u214",
+                    "source_communities": "community 5",
+                },
+            ]
+        }
+
+        return jsonify(data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/trending-interests", methods=["GET"])
 def trending_topics():
     """

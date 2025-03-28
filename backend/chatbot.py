@@ -176,6 +176,7 @@ The top influencers are:
 - If the query doesn’t match any API data, respond with: “I’m sorry, I don’t have the data to answer this query. Can you ask about misinformation, community health, or influencers in India’s digital space?”
 - Always prioritize actionable insights over raw data dumps.
 - Use simple language to ensure accessibility for non-technical stakeholders.
+Very Structly adhere to the structure given for each category and use as much markdown formatting as possible to maximize readability.
 
 ---
 """
@@ -204,6 +205,7 @@ API_ENDPOINTS = {
     "user_interaction": f"{BASE_API_URL}/user-interactions/{{user_id}}",
     "recommended_connections": f"{BASE_API_URL}/recommended-connections/{{user_id}}",
     "recommended_communities": f"{BASE_API_URL}/recommended-communities/{{user_id}}",
+    "misinformation_communities": f"{BASE_API_URL}/misinformation-communities",
 }
 
 
@@ -331,6 +333,7 @@ def classify_and_trigger_apis(user_input):
     - user_interaction (requires user_id)
     - recommended_connections (requires user_id)
     - recommended_communities (requires user_id)
+    - misinformation_communities ( use this endpoint for any questions related to misinformation)
 
     Output only the names of the relevant APIs, one per line.
 
@@ -368,6 +371,7 @@ def get_chatbot_response(user_input):
                 "user_interaction",
                 "recommended_connections",
                 "recommended_communities",
+                "misinformation_communities",
             ]:
                 if user_ids:
                     for user_id in user_ids:
@@ -376,7 +380,12 @@ def get_chatbot_response(user_input):
                         formatted_data = format_data_for_gemini(trigger, api_data)
                         data_payload[f"{trigger}_{user_id}"] = formatted_data
                 else:
-                    print(f"Skipping {trigger}: No user IDs found.")
+                    # print(f"Skipping {trigger}: No user IDs found.")
+                    endpoint = API_ENDPOINTS[trigger]
+                    api_data = fetch_api_data(endpoint, limit=20)
+                    formatted_data = format_data_for_gemini(trigger, api_data)
+                    data_payload[trigger] = formatted_data
+
             elif trigger in API_ENDPOINTS:
                 endpoint = API_ENDPOINTS[trigger]
                 api_data = fetch_api_data(endpoint, limit=20)
