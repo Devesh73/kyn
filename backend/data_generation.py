@@ -1,7 +1,7 @@
 import os
 import random
 import json
-from faker import Faker
+from faker import Faker # type: ignore
 from datetime import datetime, timedelta
 
 # Initialize Faker

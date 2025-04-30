@@ -3,13 +3,13 @@ import { MapContainer, TileLayer, useMap, Marker, Tooltip } from "react-leaflet"
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
-import { AlertCircle } from "lucide-react";
+import { Users, Activity, TrendingUp } from "lucide-react";
 
 // Create custom marker icon for regions
-const createMarkerIcon = (urgency) => {
-  const color = urgency === 'critical' ? '#ef4444' : 
-                urgency === 'high' ? '#f59e0b' : 
-                urgency === 'medium' ? '#22c55e' : '#3b82f6';
+const createMarkerIcon = (engagementLevel) => {
+  const color = engagementLevel === 'high' ? '#22c55e' : 
+                engagementLevel === 'medium' ? '#3b82f6' : 
+                '#f59e0b'; // low
                 
   return L.divIcon({
     className: 'custom-div-icon',
@@ -34,13 +34,11 @@ const HeatLayer = ({ points }) => {
   useEffect(() => {
     if (!map || !points || points.length === 0) return;
 
-    // Make sure the Leaflet.heat library is properly loaded
     if (!L.heatLayer) {
       console.error("L.heatLayer is not available. Make sure leaflet.heat is properly imported.");
       return;
     }
 
-    // Initialize the heat layer if it doesn't exist
     if (!heatLayerRef.current) {
       console.log("Initializing heat layer with", points.length, "points");
       try {
@@ -51,15 +49,14 @@ const HeatLayer = ({ points }) => {
           max: 1.0,
           minOpacity: 0.4,
           gradient: {
-            0.2: '#3461A4', // Blue (low)
-            0.4: '#FFFD84', // Yellow (moderate)
-            0.6: '#FF9A00', // Orange (high)
-            0.8: '#FF4900', // Orange-Red (very high)
-            1.0: '#900C3F', // Dark Red (extreme)
+            0.2: '#3b82f6', // Blue (low)
+            0.4: '#22c55e', // Green (moderate)
+            0.6: '#f59e0b', // Yellow (high)
+            0.8: '#ef4444', // Red (very high)
+            1.0: '#7c3aed', // Purple (extreme)
           }
         }).addTo(map);
 
-        // Force redraw
         setTimeout(() => {
           map.invalidateSize();
         }, 100);
@@ -68,11 +65,9 @@ const HeatLayer = ({ points }) => {
         console.error("Error creating heat layer:", error);
       }
     } else {
-      // Update the data if the layer already exists
       heatLayerRef.current.setLatLngs(points);
     }
 
-    // Clean up
     return () => {
       if (heatLayerRef.current) {
         map.removeLayer(heatLayerRef.current);
@@ -81,7 +76,7 @@ const HeatLayer = ({ points }) => {
     };
   }, [map, points]);
 
-  return null; // This component doesn't render anything directly
+  return null;
 };
 
 // Clickable city markers component
@@ -89,7 +84,6 @@ const RegionMarkers = ({ regions, onRegionSelect }) => {
   const map = useMap();
   
   useEffect(() => {
-    // Ensure map is properly sized
     map.invalidateSize();
   }, [map]);
 
@@ -99,13 +93,10 @@ const RegionMarkers = ({ regions, onRegionSelect }) => {
         <Marker
           key={index}
           position={[region.lat, region.lng]}
-          icon={createMarkerIcon(region.urgency)}
+          icon={createMarkerIcon(region.engagementLevel)}
           eventHandlers={{
             click: () => {
-              console.log("Region clicked:", region.name);
               onRegionSelect && onRegionSelect(region);
-              
-              // Optional: pan the map to center on clicked region
               map.setView([region.lat, region.lng], 6, {
                 animate: true,
                 duration: 0.5
@@ -116,7 +107,7 @@ const RegionMarkers = ({ regions, onRegionSelect }) => {
           <Tooltip direction="top" offset={[0, -10]} opacity={1}>
             <div className="p-1">
               <div className="font-bold text-slate-900">{region.name}</div>
-              <div className="text-xs text-slate-600">Click for insights</div>
+              <div className="text-xs text-slate-600">Click for engagement insights</div>
             </div>
           </Tooltip>
         </Marker>
@@ -125,7 +116,7 @@ const RegionMarkers = ({ regions, onRegionSelect }) => {
   );
 };
 
-const MisinformationHeatmap = ({ onRegionSelect }) => {
+const UserHeatmap = ({ onRegionSelect }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [heatmapPoints, setHeatmapPoints] = useState([]);
@@ -141,27 +132,27 @@ const MisinformationHeatmap = ({ onRegionSelect }) => {
     [37.0902, 97.4]  // Northeast corner
   ];
 
-  // Sample data with higher intensity values for better visibility
-  const sampleMisinformationData = [
-    // Delhi cluster (very high)
+  // Sample user engagement data
+  const sampleEngagementData = [
+    // Delhi cluster (very high engagement)
     [28.7041, 77.1025, 1.0],
     [28.6542, 77.2373, 0.95],
     [28.5273, 77.1389, 0.9],
     [28.6139, 77.2090, 0.85],
     [28.7128, 77.1855, 0.9],
     
-    // Mumbai cluster (high)
+    // Mumbai cluster (high engagement)
     [19.0760, 72.8777, 0.85],
     [19.1136, 72.9053, 0.8],
     [18.9548, 72.8236, 0.75],
     [19.0330, 72.8342, 0.8],
     [19.0178, 72.8478, 0.75],
     
-    // Bangalore cluster (moderate to high)
-    [12.9716, 77.5946, 0.7],
-    [13.0298, 77.5697, 0.65],
-    [12.9352, 77.6245, 0.6],
-    [12.9592, 77.6974, 0.65],
+    // Bangalore cluster (high engagement)
+    [12.9716, 77.5946, 0.9],
+    [13.0298, 77.5697, 0.85],
+    [12.9352, 77.6245, 0.8],
+    [12.9592, 77.6974, 0.85],
     
     // Kolkata cluster (moderate to high)
     [22.5726, 88.3639, 0.75],
@@ -180,19 +171,19 @@ const MisinformationHeatmap = ({ onRegionSelect }) => {
     
     // Other major cities 
     [23.0225, 72.5714, 0.6],  // Ahmedabad
-    [18.5204, 73.8567, 0.55], // Pune
-    [26.8467, 80.9462, 0.9],  // Lucknow (high - UP elections)
+    [18.5204, 73.8567, 0.65], // Pune
+    [26.8467, 80.9462, 0.7],  // Lucknow
     [26.9124, 75.7873, 0.6],  // Jaipur
-    [25.5941, 85.1376, 0.75], // Patna
+    [25.5941, 85.1376, 0.55], // Patna
     [23.2599, 77.4126, 0.5],  // Bhopal
-    [34.0837, 74.7973, 0.85], // Srinagar (high - sensitive region)
-    [26.1445, 91.7362, 0.6],  // Guwahati
+    [34.0837, 74.7973, 0.45], // Srinagar
+    [26.1445, 91.7362, 0.5],  // Guwahati
     
-    // Rural areas with localized hotspots
-    [25.3176, 82.9739, 0.8],  // Near Varanasi
-    [29.9457, 78.1642, 0.7],  // Near Dehradun
-    [15.4989, 73.8278, 0.5],  // Goa region
-    [11.9416, 79.8083, 0.55], // Pondicherry
+    // Rural areas with localized engagement
+    [25.3176, 82.9739, 0.4],  // Near Varanasi
+    [29.9457, 78.1642, 0.35], // Near Dehradun
+    [15.4989, 73.8278, 0.45], // Goa region
+    [11.9416, 79.8083, 0.4],  // Pondicherry
   ];
 
   // Define major regions with metadata for markers
@@ -201,71 +192,68 @@ const MisinformationHeatmap = ({ onRegionSelect }) => {
       name: "Delhi",
       lat: 28.7041,
       lng: 77.1025,
-      urgency: "critical",
-      description: "High misinformation about elections and vaccines"
+      engagementLevel: "high",
+      description: "High user engagement with tech and finance content"
     },
     { 
       name: "Mumbai",
       lat: 19.0760,
       lng: 72.8777,
-      urgency: "high",
-      description: "Financial scams and housing market rumors"
+      engagementLevel: "high",
+      description: "Strong engagement with business and entertainment content"
     },
     { 
       name: "Bangalore",
       lat: 12.9716,
       lng: 77.5946,
-      urgency: "medium",
-      description: "Tech-related misinformation"
+      engagementLevel: "high",
+      description: "Tech and startup content sees highest engagement"
     },
     { 
       name: "Kolkata",
       lat: 22.5726,
       lng: 88.3639,
-      urgency: "medium",
-      description: "Political news manipulation"
+      engagementLevel: "medium",
+      description: "Cultural and literary content performs well"
     },
     { 
       name: "Chennai",
       lat: 13.0827,
       lng: 80.2707,
-      urgency: "medium",
-      description: "Film industry rumors"
+      engagementLevel: "medium",
+      description: "Strong engagement with education and automotive content"
     },
     { 
       name: "Hyderabad",
       lat: 17.3850,
       lng: 78.4867,
-      urgency: "medium",
-      description: "Tech and political rumors"
+      engagementLevel: "medium",
+      description: "Tech and food content sees good engagement"
     },
     { 
       name: "Lucknow",
       lat: 26.8467,
       lng: 80.9462,
-      urgency: "high",
-      description: "Maha Kumbh Mela misinformation"
+      engagementLevel: "medium",
+      description: "Cultural and political content engagement"
     },
     { 
       name: "Srinagar",
       lat: 34.0837,
       lng: 74.7973,
-      urgency: "critical",
-      description: "False claims during diplomatic tensions"
+      engagementLevel: "low",
+      description: "Tourism and cultural content engagement"
     }
   ];
 
   useEffect(() => {
-    // Import leaflet.heat dynamically to ensure it's available
     const loadHeatPlugin = async () => {
       try {
-        // Check if leaflet.heat is already available
         if (!L.heatLayer) {
           await import('leaflet.heat');
         }
         
-        // Using sample data for now
-        setHeatmapPoints(sampleMisinformationData);
+        setHeatmapPoints(sampleEngagementData);
         setRegions(majorRegions);
       } catch (error) {
         console.error("Error loading heat plugin:", error);
@@ -279,7 +267,6 @@ const MisinformationHeatmap = ({ onRegionSelect }) => {
   }, []);
 
   useEffect(() => {
-    // Fix for map container display issues
     const handleResize = () => {
       if (mapRef.current) {
         mapRef.current.invalidateSize();
@@ -287,8 +274,6 @@ const MisinformationHeatmap = ({ onRegionSelect }) => {
     };
 
     window.addEventListener('resize', handleResize);
-    
-    // Initial fix for map rendering
     setTimeout(handleResize, 300);
 
     return () => {
@@ -300,7 +285,7 @@ const MisinformationHeatmap = ({ onRegionSelect }) => {
     return (
       <div className="relative flex flex-col rounded-xl bg-transparent p-4 shadow-2xl z-0 h-[500px]">
         <div className="flex items-center justify-center h-full">
-          <div className="text-white text-lg">Loading misinformation heatmap...</div>
+          <div className="text-white text-lg">Loading user engagement heatmap...</div>
         </div>
       </div>
     );
@@ -318,10 +303,10 @@ const MisinformationHeatmap = ({ onRegionSelect }) => {
 
   return (
     <div className="relative flex flex-col rounded-xl bg-transparent p-4 shadow-2xl z-0 h-[500px]">
-      <h3 className="text-xl font-bold text-white mb-4">Misinformation Spread Heatmap</h3>
+      <h3 className="text-xl font-bold text-white mb-4">User Engagement Heatmap</h3>
       <div className="text-sm text-gray-400 mb-2 flex items-center">
-        <AlertCircle size={14} className="text-purple-500 mr-1" />
-        <span>Click on city markers to view detailed misinformation insights</span>
+        <Users size={14} className="text-blue-500 mr-1" />
+        <span>Click on city markers to view detailed engagement insights</span>
       </div>
       
       <MapContainer
@@ -347,16 +332,16 @@ const MisinformationHeatmap = ({ onRegionSelect }) => {
       <div className="absolute bottom-4 right-4 bg-black/70 p-2 rounded-md z-10">
         <div className="flex items-center text-xs">
           <div className="flex space-x-1">
-            <span className="w-3 h-3 inline-block rounded-full bg-blue-600"></span>
+            <span className="w-3 h-3 inline-block rounded-full bg-blue-500"></span>
             <span className="text-white mr-2">Low</span>
             
-            <span className="w-3 h-3 inline-block rounded-full bg-yellow-400"></span>
+            <span className="w-3 h-3 inline-block rounded-full bg-green-500"></span>
             <span className="text-white mr-2">Moderate</span>
             
-            <span className="w-3 h-3 inline-block rounded-full bg-orange-500"></span>
+            <span className="w-3 h-3 inline-block rounded-full bg-yellow-500"></span>
             <span className="text-white mr-2">High</span>
             
-            <span className="w-3 h-3 inline-block rounded-full bg-red-700"></span>
+            <span className="w-3 h-3 inline-block rounded-full bg-purple-600"></span>
             <span className="text-white">Extreme</span>
           </div>
         </div>
@@ -365,4 +350,4 @@ const MisinformationHeatmap = ({ onRegionSelect }) => {
   );
 };
 
-export default MisinformationHeatmap;
+export default UserHeatmap;

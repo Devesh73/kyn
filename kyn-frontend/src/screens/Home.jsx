@@ -5,7 +5,7 @@ const Home = () => {
   return (
     <section className="flex justify-between items-center py-16 px-8 bg-slate-950 shadow-lg h-screen min-w-[300px] max-w-[100vw] flex-wrap">
       <div className="text-white max-w-[50%] pr-8">
-        <h1 className="text-4xl font-bold mb-4  text-purple-700">Welcome to the Project SARVAM</h1>
+        <h1 className="text-4xl font-bold mb-4  text-purple-700">Welcome to the Project SocialSage</h1>
         <p className="text-xl mb-6  text-purple-700">Empowering AI-driven solutions to Information</p>
         <NavLink
           to="/login"

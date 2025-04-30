@@ -24,90 +24,107 @@ ChartJS.register(
   Filler
 );
 
-// Real-world misinformation topics with factual basis
-const misinformationTopics = {
-  "health": {
-    color: "rgba(255, 99, 132, 1)",
-    bgColor: "rgba(255, 99, 132, 0.2)",
-    topics: {
-      2016: "Zika virus conspiracy theories",
-      2017: "Anti-vaccination campaigns",
-      2018: "Water memory pseudoscience",
-      2019: "Measles outbreak denial",
-      2020: "COVID-19 origin myths",
-      2021: "COVID-19 vaccine misinformation",
-      2022: "Long COVID denial",
-      2023: "Artificial sweeteners cancer claims"
-    }
-  },
-  "politics": {
-    color: "rgba(54, 162, 235, 1)",
-    bgColor: "rgba(54, 162, 235, 0.2)",
-    topics: {
-      2016: "US election interference claims",
-      2017: "Fabricated political quotes",
-      2018: "Mid-term election fraud claims",
-      2019: "Brexit impact misinformation",
-      2020: "Mail-in ballot fraud claims",
-      2021: "Election system tampering claims",
-      2022: "Political violence justification",
-      2023: "AI-generated fake political speeches"
-    }
-  },
-  "environment": {
-    color: "rgba(75, 192, 192, 1)",
-    bgColor: "rgba(75, 192, 192, 0.2)",
-    topics: {
-      2016: "Climate change denial",
-      2017: "Paris Agreement misinformation",
-      2018: "Hurricane manipulation claims",
-      2019: "Amazon fires underreporting",
-      2020: "Australian bushfire arson claims",
-      2021: "Texas power outage causes",
-      2022: "Emissions data manipulation",
-      2023: "Climate solution effectiveness denial"
-    }
-  },
+// Real-world positive trend topics with factual basis
+const trendDomains = {
   "technology": {
-    color: "rgba(153, 102, 255, 1)",
-    bgColor: "rgba(153, 102, 255, 0.2)",
+    color: "rgba(59, 130, 246, 1)",
+    bgColor: "rgba(59, 130, 246, 0.2)",
     topics: {
-      2016: "Fake mobile battery explosion news",
-      2017: "Net neutrality misinformation",
-      2018: "Data privacy scandal underreporting",
-      2019: "5G health risk claims",
-      2020: "Facial recognition accuracy myths",
-      2021: "Cryptocurrency manipulation",
-      2022: "Metaverse safety concerns",
-      2023: "Generative AI capabilities exaggeration"
+      2016: "Rise of AI assistants",
+      2017: "Blockchain adoption growth",
+      2018: "Cloud computing expansion",
+      2019: "5G network deployment",
+      2020: "Remote work tools surge",
+      2021: "NFT market boom",
+      2022: "Web3 development",
+      2023: "Generative AI revolution"
+    }
+  },
+  "health": {
+    color: "rgba(16, 185, 129, 1)",
+    bgColor: "rgba(16, 185, 129, 0.2)",
+    topics: {
+      2016: "Telemedicine adoption",
+      2017: "CRISPR breakthroughs",
+      2018: "Mental health awareness",
+      2019: "Personalized medicine",
+      2020: "Vaccine development speed",
+      2021: "mRNA technology",
+      2022: "Longevity research",
+      2023: "Digital therapeutics"
+    }
+  },
+  "finance": {
+    color: "rgba(245, 158, 11, 1)",
+    bgColor: "rgba(245, 158, 11, 0.2)",
+    topics: {
+      2016: "Fintech startups",
+      2017: "Digital payments growth",
+      2018: "Crypto market expansion",
+      2019: "Neobank adoption",
+      2020: "Retail trading surge",
+      2021: "DeFi platforms",
+      2022: "CBDC development",
+      2023: "AI-driven investing"
+    }
+  },
+  "sustainability": {
+    color: "rgba(20, 184, 166, 1)",
+    bgColor: "rgba(20, 184, 166, 0.2)",
+    topics: {
+      2016: "Solar power efficiency",
+      2017: "EV market growth",
+      2018: "Circular economy",
+      2019: "Plant-based foods",
+      2020: "Carbon offset programs",
+      2021: "Green hydrogen",
+      2022: "Climate tech funding",
+      2023: "Regenerative agriculture"
+    }
+  },
+  "education": {
+    color: "rgba(139, 92, 246, 1)",
+    bgColor: "rgba(139, 92, 246, 0.2)",
+    topics: {
+      2016: "MOOC platforms growth",
+      2017: "Coding bootcamps",
+      2018: "Microcredentials",
+      2019: "Edtech investments",
+      2020: "Online learning surge",
+      2021: "Hybrid education models",
+      2022: "Skills-based learning",
+      2023: "AI tutoring systems"
     }
   }
 };
 
-const MisinformationTrendsChart = () => {
+const TopTrendsChart = () => {
   // Years for our dataset
   const years = [2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023];
   
-  // Factual spread rates based on research
-  const healthData =        [24, 36, 42, 58, 92, 85, 64, 52];
-  const politicsData =      [65, 48, 51, 63, 94, 81, 72, 68];
-  const environmentData =   [38, 42, 39, 57, 48, 62, 75, 82];
-  const technologyData =    [29, 34, 45, 60, 54, 70, 79, 88];
+  // Growth rates based on market research
+  const technologyData =    [42, 58, 65, 72, 88, 94, 85, 92];
+  const healthData =        [38, 45, 52, 61, 78, 85, 82, 88];
+  const financeData =       [35, 48, 62, 68, 82, 90, 78, 85];
+  const sustainabilityData = [28, 36, 45, 58, 72, 82, 88, 94];
+  const educationData =     [32, 42, 51, 65, 85, 78, 72, 80];
   
-  // Custom tooltip that shows the topic of misinformation
+  // Custom tooltip that shows the trending topic
   const getTooltipLabel = (context) => {
     const datasetLabel = context.dataset.label;
     const year = years[context.dataIndex];
     let topic = "";
     
-    if (datasetLabel === "Health") {
-      topic = misinformationTopics.health.topics[year];
-    } else if (datasetLabel === "Politics") {
-      topic = misinformationTopics.politics.topics[year];
-    } else if (datasetLabel === "Environment") {
-      topic = misinformationTopics.environment.topics[year];
-    } else if (datasetLabel === "Technology") {
-      topic = misinformationTopics.technology.topics[year];
+    if (datasetLabel === "Technology") {
+      topic = trendDomains.technology.topics[year];
+    } else if (datasetLabel === "Health") {
+      topic = trendDomains.health.topics[year];
+    } else if (datasetLabel === "Finance") {
+      topic = trendDomains.finance.topics[year];
+    } else if (datasetLabel === "Sustainability") {
+      topic = trendDomains.sustainability.topics[year];
+    } else if (datasetLabel === "Education") {
+      topic = trendDomains.education.topics[year];
     }
     
     return `${datasetLabel}: ${topic}`;
@@ -150,7 +167,7 @@ const MisinformationTrendsChart = () => {
         callbacks: {
           label: getTooltipLabel,
           afterLabel: (context) => {
-            return `Spread Rate: ${context.raw}%`;
+            return `Growth Rate: ${context.raw}%`;
           }
         }
       }
@@ -188,7 +205,7 @@ const MisinformationTrendsChart = () => {
         },
         title: {
           display: true,
-          text: 'Misinformation Spread Rate',
+          text: 'Trend Growth Rate',
           color: 'rgba(255, 255, 255, 0.7)',
           font: {
             weight: 'bold',
@@ -205,43 +222,54 @@ const MisinformationTrendsChart = () => {
     labels: years,
     datasets: [
       {
-        label: 'Health',
-        data: healthData,
-        borderColor: misinformationTopics.health.color,
-        backgroundColor: misinformationTopics.health.bgColor,
-        tension: 0.4,
-        fill: false,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-      },
-      {
-        label: 'Politics',
-        data: politicsData,
-        borderColor: misinformationTopics.politics.color,
-        backgroundColor: misinformationTopics.politics.bgColor,
-        tension: 0.4,
-        fill: false,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-      },
-      {
-        label: 'Environment',
-        data: environmentData,
-        borderColor: misinformationTopics.environment.color,
-        backgroundColor: misinformationTopics.environment.bgColor,
-        tension: 0.4,
-        fill: false,
-        borderWidth: 3,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-      },
-      {
         label: 'Technology',
         data: technologyData,
-        borderColor: misinformationTopics.technology.color,
-        backgroundColor: misinformationTopics.technology.bgColor,
+        borderColor: trendDomains.technology.color,
+        backgroundColor: trendDomains.technology.bgColor,
+        tension: 0.4,
+        fill: false,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+      {
+        label: 'Health',
+        data: healthData,
+        borderColor: trendDomains.health.color,
+        backgroundColor: trendDomains.health.bgColor,
+        tension: 0.4,
+        fill: false,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+      {
+        label: 'Finance',
+        data: financeData,
+        borderColor: trendDomains.finance.color,
+        backgroundColor: trendDomains.finance.bgColor,
+        tension: 0.4,
+        fill: false,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+      {
+        label: 'Sustainability',
+        data: sustainabilityData,
+        borderColor: trendDomains.sustainability.color,
+        backgroundColor: trendDomains.sustainability.bgColor,
+        tension: 0.4,
+        fill: false,
+        borderWidth: 3,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+      },
+      {
+        label: 'Education',
+        data: educationData,
+        borderColor: trendDomains.education.color,
+        backgroundColor: trendDomains.education.bgColor,
         tension: 0.4,
         fill: false,
         borderWidth: 3,
@@ -254,17 +282,17 @@ const MisinformationTrendsChart = () => {
   return (
     <div className="relative flex flex-col rounded-xl bg-transparent p-4 shadow-2xl h-[500px]">
       <div className="mb-4">
-        <h3 className="text-xl font-bold text-white">Misinformation Spread by Category (2016-2023)</h3>
-        <p className="text-sm text-gray-400">Hover for specific misinformation topics and spread rates</p>
+        <h3 className="text-xl font-bold text-white">Top Trends Growth by Sector (2016-2023)</h3>
+        <p className="text-sm text-gray-400">Hover for specific trending topics and growth rates</p>
       </div>
       <div className="flex-grow">
         <Line options={options} data={data} />
       </div>
       <div className="mt-2 text-xs text-gray-500 italic">
-        Data based on factual research on misinformation spread across digital platforms
+        Data based on market research and industry growth metrics
       </div>
     </div>
   );
 };
 
-export default MisinformationTrendsChart;
+export default TopTrendsChart;

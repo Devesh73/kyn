@@ -3,10 +3,10 @@ import { BarChart3, AlertTriangle, UserCircle, Map, Newspaper } from 'lucide-rea
 
 const navItems = [
   { id: "overview", label: "Overview", icon: <BarChart3 size={18} /> },
-  { id: "news", label: "News Analysis", icon: <Newspaper size={18} /> },
-  { id: "misinformation", label: "Misinformation Tracker", icon: <AlertTriangle size={18} /> },
+  { id: "news", label: "Trend Analysis", icon: <Newspaper size={18} /> },
+  { id: "misinformation", label: "User Engagement", icon: <AlertTriangle size={18} /> },
   { id: "influencer", label: "Community Insights", icon: <UserCircle size={18} /> },
-  { id: "regional", label: "Regional Focus", icon: <Map size={18} /> },
+  // { id: "regional", label: "Regional Focus", icon: <Map size={18} /> },
 ];
 
 const HorizontalNavigation = ({ activeTab, setActiveTab }) => {

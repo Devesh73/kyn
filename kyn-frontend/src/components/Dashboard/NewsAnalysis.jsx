@@ -1,16 +1,71 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Calendar, Filter, ChevronDown, ChevronUp, AlertTriangle, Check, Clock } from 'lucide-react';
-import axios from 'axios';
+import { 
+  Search, 
+  Calendar, 
+  ChevronDown, 
+  ChevronUp, 
+  TrendingUp, 
+  BarChart2, 
+  Hash, 
+  Users, 
+  Clock, 
+  MapPin, 
+  Activity 
+} from 'lucide-react';
+import { 
+  Chart as ChartJS, 
+  CategoryScale, 
+  LinearScale, 
+  PointElement, 
+  LineElement, 
+  Title, 
+  Tooltip, 
+  Legend,
+  Filler
+} from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
-const NewsAnalysis = () => {
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
+
+const TrendAnalysis = () => {
   // State for filters
   const [year, setYear] = useState(2025);
   const [month, setMonth] = useState(1);
   const [day, setDay] = useState(15);
   const [searchQuery, setSearchQuery] = useState('');
-  const [expandedNewsId, setExpandedNewsId] = useState(null);
-  const [newsArticles, setNewsArticles] = useState([]);
+  const [expandedTrendId, setExpandedTrendId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [timeRange, setTimeRange] = useState('24h'); // 24h, 7d, 30d
+  const [regionFilter, setRegionFilter] = useState('all');
+  const [trends, setTrends] = useState([]);
+  
+  // Fetch data on component mount
+  useEffect(() => {
+    const fetchTrends = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/trends.json');
+        const data = await response.json();
+        setTrends(data.trends);
+      } catch (error) {
+        console.error('Error fetching trends:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchTrends();
+  }, []);
 
   // Filter options
   const availableYears = [2023, 2024, 2025];
@@ -29,427 +84,348 @@ const NewsAnalysis = () => {
     { value: 12, label: 'December' }
   ];
   
+  const timeRanges = [
+    { value: '24h', label: 'Last 24 hours' },
+    { value: '7d', label: 'Last 7 days' },
+    { value: '30d', label: 'Last 30 days' }
+  ];
+  
+  const regions = [
+    { value: 'all', label: 'All Regions' },
+    { value: 'Delhi', label: 'Delhi' },
+    { value: 'Bangalore', label: 'Bangalore' },
+    { value: 'Mumbai', label: 'Mumbai' },
+    { value: 'Hyderabad', label: 'Hyderabad' },
+    { value: 'National', label: 'National' }
+  ];
+  
   // Calculate days in the selected month
   const daysInMonth = useMemo(() => {
     return new Date(year, month, 0).getDate();
   }, [year, month]);
-  
-  // Sample news articles for specific dates
-  const sampleNewsArticlesByDate = {
-    // January 5, 2025
-    "2025-01-05": [
-      {
-        id: 5001,
-        title: "Housing Market Collapse Rumors",
-        source: "Financial Express Daily",
-        timestamp: "2025-01-05T13:30:00",
-        isMisinformation: true,
-        category: "Economy",
-        region: "Mumbai",
-        summary: "False claims about imminent real estate market crash affecting property investments.",
-        urgency: "high"
-      },
-      {
-        id: 5002,
-        title: "Maha Kumbh Mela Misinformation",
-        source: "Religious Affairs Monitor",
-        timestamp: "2025-01-05T15:45:00",
-        isMisinformation: true,
-        category: "Culture",
-        region: "Lucknow",
-        summary: "False claims about event safety and logistics affecting religious gathering.",
-        urgency: "high"
-      },
-      {
-        id: 5003,
-        title: "Annual Economic Report Released by Finance Ministry",
-        source: "Economic Times",
-        timestamp: "2025-01-05T10:00:00",
-        isMisinformation: false,
-        category: "Economy",
-        region: "National",
-        summary: "The Finance Ministry released its annual economic report highlighting growth projections and fiscal policy directions for the upcoming year."
-      }
-    ],
-    
-    // January 10, 2025
-    "2025-01-10": [
-      {
-        id: 10001,
-        title: "COVID-19 Vaccine Rumors",
-        source: "Health Freedom Network",
-        timestamp: "2025-01-10T09:20:00",
-        isMisinformation: true,
-        category: "Health",
-        region: "Delhi",
-        summary: "Dangerous health misinformation regarding vaccine side effects.",
-        urgency: "critical"
-      },
-      {
-        id: 10002,
-        title: "New COVID-19 Variant Identified in Research Lab",
-        source: "Medical Research Journal",
-        timestamp: "2025-01-10T11:45:00",
-        isMisinformation: false,
-        category: "Health",
-        region: "National",
-        summary: "Researchers at the National Institute of Virology have identified a new variant of COVID-19, but note it appears to cause milder symptoms than previous strains."
-      }
-    ],
-    
-    // January 15, 2025
-    "2025-01-15": [
-      {
-        id: 15001,
-        title: "Delhi Election Misinformation",
-        source: "Delhi Politics Today",
-        timestamp: "2025-01-15T14:30:00",
-        isMisinformation: true,
-        category: "Politics",
-        region: "Delhi",
-        summary: "False claims about electoral irregularities spreading on social media.",
-        urgency: "high"
-      },
-      {
-        id: 15002,
-        title: "Election Commission Announces Vote Counting Procedures",
-        source: "Delhi Electoral Office",
-        timestamp: "2025-01-15T10:15:00",
-        isMisinformation: false,
-        category: "Politics",
-        region: "Delhi",
-        summary: "The Election Commission has announced enhanced transparency measures for the upcoming vote counting process, including live CCTV feeds and party representative access."
-      }
-    ],
-    
-    // January 18, 2025
-    "2025-01-18": [
-      {
-        id: 18001,
-        title: "Financial Scam Warnings",
-        source: "Financial Regulatory Authority",
-        timestamp: "2025-01-18T11:20:00",
-        isMisinformation: true,
-        category: "Finance",
-        region: "Mumbai",
-        summary: "Emerging misinformation trend on financial scams targeting urban professionals.",
-        urgency: "medium"
-      },
-      {
-        id: 18002,
-        title: "THousing Market Collapse Rumors",
-        source: "Business Insider India",
-        timestamp: "2025-01-18T09:30:00",
-        isMisinformation: false,
-        category: "Business",
-        region: "Mumbai",
-        summary: "False claims about imminent real estate market crash affecting property investments"
-      },
-      {
-        id: 18002,
-        title: "Tech Startup Secures Record Funding",
-        source: "Business Insider India",
-        timestamp: "2025-01-18T09:30:00",
-        isMisinformation: false,
-        category: "Business",
-        region: "Bangalore",
-        summary: "A Bangalore-based AI startup has secured $200 million in Series C funding, marking the largest investment round for an Indian tech company this year."
-      }
-    ]
-  };
-  
-  // Sample news articles for the first 5 days
-  const sampleNewsArticlesByDay = {
-    // Day 1 news
-    1: [
-      {
-        id: 101,
-        title: "Government Announces New Cyber Security Framework",
-        source: "National Tech News",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-01T10:15:00`,
-        isMisinformation: false,
-        category: "Technology",
-        region: "National",
-        summary: "The Ministry of Electronics and IT has announced a comprehensive cyber security framework focusing on critical infrastructure protection and data privacy enhancements."
-      },
-      {
-        id: 102,
-        title: "Hackers Steal Millions from Central Bank, Claims Report",
-        source: "Financial Express Daily",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-01T14:30:00`,
-        isMisinformation: true,
-        category: "Finance",
-        region: "National",
-        summary: "An unverified report claiming hackers stole millions from the central bank has been circulating despite official denials. The central bank confirmed all systems are secure."
-      },
-    ],
-    
-    // Day 2 news
-    2: [
-      {
-        id: 201,
-        title: "Record-Breaking Climate Agreement Reached at UN Summit",
-        source: "Global Environment Today",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-02T09:45:00`,
-        isMisinformation: false,
-        category: "Environment",
-        region: "International",
-        summary: "World leaders have reached a groundbreaking climate agreement that sets ambitious carbon reduction targets and establishes a $100 billion fund for developing nations."
-      },
-      {
-        id: 202,
-        title: "Scientists Warning of Imminent Climate Catastrophe",
-        source: "Climate Truth Network",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-02T16:20:00`,
-        isMisinformation: true,
-        category: "Environment",
-        region: "International",
-        summary: "A report circulating online claims scientists predict catastrophic climate events within months, misrepresenting IPCC data which projects impacts over decades, not immediate disasters."
-      },
-    ],
-    
-    // Day 3 news
-    3: [
-      {
-        id: 301,
-        title: "New Cancer Treatment Shows 90% Success in Trials",
-        source: "Medical Research Journal",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-03T11:05:00`,
-        isMisinformation: false,
-        category: "Health",
-        region: "National",
-        summary: "A breakthrough cancer treatment developed by researchers at AIIMS has shown a 90% success rate in early clinical trials, particularly effective against previously resistant forms."
-      },
-      {
-        id: 302,
-        title: "Natural Herb Cures All Cancers, Claims Viral Post",
-        source: "Wellness Insights Blog",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-03T12:45:00`,
-        isMisinformation: true,
-        category: "Health",
-        region: "Delhi",
-        summary: "A viral social media post claiming a specific herb cures all forms of cancer has gained traction despite no scientific evidence supporting the claim. Medical experts have issued warnings."
-      },
-    ],
-    
-    // Day 4 news
-    4: [
-      {
-        id: 401,
-        title: "Supreme Court Issues Landmark Privacy Ruling",
-        source: "Legal Affairs Daily",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-04T10:30:00`,
-        isMisinformation: false,
-        category: "Legal",
-        region: "National",
-        summary: "The Supreme Court has issued a landmark ruling strengthening digital privacy protections for citizens and establishing new guidelines for data collection by both government and private entities."
-      },
-      {
-        id: 402,
-        title: "Supreme Court Judge Resigns Over Corruption Scandal",
-        source: "Citizens' Voice Network",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-04T15:15:00`,
-        isMisinformation: true,
-        category: "Legal",
-        region: "National",
-        summary: "False reports about a Supreme Court judge resigning over corruption allegations spread rapidly across social media platforms before being officially denied by court authorities."
-      },
-    ],
-    
-    // Day 5 news
-    5: [
-      {
-        id: 501,
-        title: "India and Japan Sign Major Defense Pact",
-        source: "International Relations Monitor",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-05T14:00:00`,
-        isMisinformation: false,
-        category: "Defense",
-        region: "National",
-        summary: "India and Japan have signed a comprehensive defense agreement that includes joint military exercises, technology transfer, and strategic cooperation in the Indo-Pacific region."
-      },
-      {
-        id: 502,
-        title: "Border Conflict Escalates with Neighboring Country",
-        source: "Patriot News Network",
-        timestamp: `2025-${month.toString().padStart(2, '0')}-05T17:30:00`,
-        isMisinformation: true,
-        category: "Defense",
-        region: "Border Regions",
-        summary: "Unverified reports of border conflicts have been spreading online with doctored images and videos. Defense officials have confirmed no unusual activity in border areas."
-      },
-    ]
-  };
-  
-  // Default news for other days
-  const defaultDayNews = [
-    {
-      id: 1,
-      title: "New EVM Technology to be Deployed in Delhi Elections",
-      source: "Delhi Electoral Office",
-      timestamp: `2025-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T09:30:00`,
-      isMisinformation: false,
-      category: "Politics",
-      region: "Delhi",
-      summary: "The Delhi Electoral Office has announced the deployment of next-generation electronic voting machines featuring enhanced security measures for upcoming assembly elections."
-    },
-    {
-      id: 2,
-      title: "EVMs Hacked in Delhi Test Run, Claims Opposition",
-      source: "Delhi Politics Today",
-      timestamp: `2025-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T14:45:00`,
-      isMisinformation: true,
-      category: "Politics",
-      region: "Delhi",
-      summary: "Opposition parties claim to have evidence that EVMs were manipulated during test runs, a claim refuted by election officials who clarified that the video showing malfunctions was from a training session."
-    },
-    {
-      id: 3,
-      title: "Health Ministry Announces COVID-19 Booster Campaign",
-      source: "Ministry of Health",
-      timestamp: `2025-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T10:15:00`,
-      isMisinformation: false,
-      category: "Health",
-      region: "National",
-      summary: "The Health Ministry has launched a nationwide campaign for the latest COVID-19 booster shots, targeting vulnerable populations first."
-    },
-    {
-      id: 4,
-      title: "New Study Links COVID-19 Vaccine to Neurological Issues",
-      source: "Health Freedom Network",
-      timestamp: `2025-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}T16:20:00`,
-      isMisinformation: true,
-      category: "Health",
-      region: "Delhi",
-      summary: "An unverified report claiming to be a 'leaked study' suggests severe neurological side effects from COVID-19 boosters, contradicting extensive clinical trial data."
-    }
-  ];
-
-  useEffect(() => {
-    // Simulating API call to fetch news articles for selected date
-    setLoading(true);
-    
-    // Format the date string for lookup in sampleNewsArticlesByDate
-    const dateString = `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
-    
-    setTimeout(() => {
-      // First check if we have specific data for this exact date
-      if (sampleNewsArticlesByDate[dateString]) {
-        setNewsArticles(sampleNewsArticlesByDate[dateString]);
-      } else if (day <= 5) {
-        // If not, use the day-based samples for first 5 days
-        setNewsArticles(sampleNewsArticlesByDay[day] || []);
-      } else {
-        // Otherwise use default news
-        setNewsArticles(defaultDayNews);
-      }
-      setLoading(false);
-    }, 800);
-  }, [year, month, day]);
 
   const toggleExpand = (id) => {
-    setExpandedNewsId(expandedNewsId === id ? null : id);
+    setExpandedTrendId(expandedTrendId === id ? null : id);
   };
 
-  // Filter articles based on search query
-  const filteredArticles = useMemo(() => {
-    if (!searchQuery.trim()) return newsArticles;
+  // Filter trends based on search query and filters
+  const filteredTrends = useMemo(() => {
+    if (loading || !trends.length) return [];
     
-    const query = searchQuery.toLowerCase();
-    return newsArticles.filter(article => 
-      article.title.toLowerCase().includes(query) || 
-      article.region.toLowerCase().includes(query) || 
-      article.category.toLowerCase().includes(query) ||
-      article.source.toLowerCase().includes(query) ||
-      article.summary.toLowerCase().includes(query)
-    );
-  }, [newsArticles, searchQuery]);
+    let result = [...trends];
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(trend => 
+        trend.name.toLowerCase().includes(query) || 
+        trend.relatedTags.some(tag => tag.toLowerCase().includes(query)) || 
+        trend.topRegions.some(region => region.name.toLowerCase().includes(query)) ||
+        trend.influencers.some(influencer => influencer.name.toLowerCase().includes(query)) ||
+        trend.relatedBrands.some(brand => brand.toLowerCase().includes(query))
+      );
+    }
+    
+    // Apply region filter
+    if (regionFilter !== 'all') {
+      result = result.filter(trend => 
+        trend.topRegions.some(region => region.name === regionFilter)
+      );
+    }
+    
+    // Sort by growth or mentions based on time range
+    if (timeRange === '24h') {
+      result.sort((a, b) => b.growth - a.growth);
+    } else if (timeRange === '7d') {
+      result.sort((a, b) => {
+        const a7dGrowth = ((a.currentMentions - a.historicalData["2025-01-08"]?.mentions || a.currentMentions) / 
+                         (a.historicalData["2025-01-08"]?.mentions || 1)) * 100;
+        const b7dGrowth = ((b.currentMentions - b.historicalData["2025-01-08"]?.mentions || b.currentMentions) / 
+                         (b.historicalData["2025-01-08"]?.mentions || 1)) * 100;
+        return b7dGrowth - a7dGrowth;
+      });
+    } else {
+      result.sort((a, b) => b.currentMentions - a.currentMentions);
+    }
+    
+    return result;
+  }, [trends, searchQuery, timeRange, regionFilter, loading]);
 
-  // Format timestamp to readable time
-  const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  // Function to get growth color
+  const getGrowthColor = (growth) => {
+    if (growth > 20) return 'text-emerald-400';
+    if (growth > 15) return 'text-green-400';
+    if (growth > 10) return 'text-yellow-400';
+    return 'text-gray-400';
   };
 
-  // Function to get urgency class styles
-  const getUrgencyStyles = (urgency) => {
-    switch (urgency) {
-      case 'critical':
-        return 'bg-red-900/30 text-red-400';
-      case 'high':
-        return 'bg-amber-900/30 text-amber-400';
-      case 'medium':
-        return 'bg-yellow-900/30 text-yellow-400';
-      default:
-        return 'bg-emerald-900/30 text-emerald-400';
+  // Function to render demographic bar
+  const renderDemographicBar = (data) => {
+    return (
+      <div className="flex h-4 w-full bg-gray-800 rounded overflow-hidden">
+        {Object.entries(data).map(([key, value]) => (
+          <div 
+            key={key}
+            style={{ width: `${value}%` }}
+            className={`h-full ${
+              key === 'male' ? 'bg-blue-500' : 
+              key === 'female' ? 'bg-pink-500' : 
+              key === '18-24' ? 'bg-purple-500' :
+              key === '25-34' ? 'bg-indigo-500' :
+              key === '35-44' ? 'bg-teal-500' :
+              'bg-gray-500'
+            }`}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  // Function to render sentiment indicator
+  const renderSentimentIndicator = (sentiment) => {
+    return (
+      <div className="flex items-center">
+        <div className="flex-1 bg-gray-800 rounded-full h-2 overflow-hidden">
+          <div 
+            className="h-full bg-green-500" 
+            style={{ width: `${sentiment.positive}%` }}
+          />
+          <div 
+            className="h-full bg-yellow-500" 
+            style={{ width: `${sentiment.neutral}%`, marginLeft: '-1px' }}
+          />
+          <div 
+            className="h-full bg-red-500" 
+            style={{ width: `${sentiment.negative}%`, marginLeft: '-1px' }}
+          />
+        </div>
+        <div className="ml-2 text-xs text-gray-400">
+          {sentiment.positive}% 👍
+        </div>
+      </div>
+    );
+  };
+
+  // Prepare data for the trend growth chart
+  const prepareChartData = () => {
+    if (filteredTrends.length === 0) return null;
+
+    const labels = filteredTrends.map(trend => trend.name);
+    const growthData = filteredTrends.map(trend => trend.growth);
+    const mentionData = filteredTrends.map(trend => trend.currentMentions / 1000); // Scale down for chart
+
+    return {
+      labels,
+      datasets: [
+        {
+          label: 'Growth Rate (%)',
+          data: growthData,
+          borderColor: 'rgba(59, 130, 246, 1)',
+          backgroundColor: 'rgba(59, 130, 246, 0.2)',
+          yAxisID: 'y',
+          tension: 0.4,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        },
+        {
+          label: 'Mentions (thousands)',
+          data: mentionData,
+          borderColor: 'rgba(16, 185, 129, 1)',
+          backgroundColor: 'rgba(16, 185, 129, 0.2)',
+          yAxisID: 'y1',
+          tension: 0.4,
+          fill: false,
+          borderWidth: 2,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+        }
+      ]
+    };
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      intersect: false,
+      mode: 'index',
+    },
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: {
+          color: 'white',
+          font: {
+            size: 12,
+            weight: 'bold'
+          },
+          usePointStyle: true,
+          pointStyle: 'circle',
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        titleColor: '#fff',
+        bodyColor: '#fff',
+        titleFont: {
+          size: 14,
+          weight: 'bold'
+        },
+        bodyFont: {
+          size: 13
+        },
+        padding: 12,
+        cornerRadius: 6,
+        displayColors: true,
+      }
+    },
+    scales: {
+      x: {
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.7)',
+          font: {
+            weight: 'bold'
+          }
+        }
+      },
+      y: {
+        type: 'linear',
+        display: true,
+        position: 'left',
+        grid: {
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.7)',
+          callback: function(value) {
+            return value + '%';
+          }
+        },
+        title: {
+          display: true,
+          text: 'Growth Rate (%)',
+          color: 'rgba(255, 255, 255, 0.7)',
+          font: {
+            weight: 'bold',
+            size: 12
+          }
+        }
+      },
+      y1: {
+        type: 'linear',
+        display: true,
+        position: 'right',
+        grid: {
+          drawOnChartArea: false,
+          color: 'rgba(255, 255, 255, 0.1)',
+        },
+        ticks: {
+          color: 'rgba(255, 255, 255, 0.7)',
+          callback: function(value) {
+            return value + 'k';
+          }
+        },
+        title: {
+          display: true,
+          text: 'Mentions (thousands)',
+          color: 'rgba(255, 255, 255, 0.7)',
+          font: {
+            weight: 'bold',
+            size: 12
+          }
+        }
+      }
     }
   };
+
+  const chartData = prepareChartData();
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-bold text-white mb-4">News Analysis</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-white">Trend Analysis Dashboard</h2>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-gray-400">Updated: Today, 15:42 IST</span>
+        </div>
+      </div>
       
       {/* Filters section */}
       <div className="bg-black bg-opacity-40 rounded-xl p-4 border border-gray-800">
-        <div className="flex flex-col space-y-4">
-          {/* Year, Month, and Day selectors in one row */}
-          <div className="flex items-center gap-6">
-            {/* Year dropdown */}
-            <div className="w-32">
-              <label className="text-xs text-gray-400 mb-1 block">Year</label>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Time range selector */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Time Range</label>
+            <select 
+              value={timeRange}
+              onChange={(e) => setTimeRange(e.target.value)}
+              className="w-full bg-gray-900 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500"
+            >
+              {timeRanges.map(range => (
+                <option key={range.value} value={range.value}>{range.label}</option>
+              ))}
+            </select>
+          </div>
+          
+          {/* Region filter */}
+          <div>
+            <label className="text-xs text-gray-400 mb-1 block">Region</label>
+            <select 
+              value={regionFilter}
+              onChange={(e) => setRegionFilter(e.target.value)}
+              className="w-full bg-gray-900 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500"
+            >
+              {regions.map(region => (
+                <option key={region.value} value={region.value}>{region.label}</option>
+              ))}
+            </select>
+          </div>
+          
+          {/* Date selector */}
+          <div className="md:col-span-2">
+            <label className="text-xs text-gray-400 mb-1 block">Date</label>
+            <div className="flex items-center gap-4">
               <select 
                 value={year}
                 onChange={(e) => setYear(Number(e.target.value))}
-                className="w-full bg-gray-900 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="flex-1 bg-gray-900 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500"
               >
                 {availableYears.map(y => (
                   <option key={y} value={y}>{y}</option>
                 ))}
               </select>
-            </div>
-            
-            {/* Month dropdown */}
-            <div className="w-40">
-              <label className="text-xs text-gray-400 mb-1 block">Month</label>
+              
               <select 
                 value={month}
                 onChange={(e) => setMonth(Number(e.target.value))}
-                className="w-full bg-gray-900 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500"
+                className="flex-1 bg-gray-900 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500"
               >
                 {availableMonths.map(m => (
                   <option key={m.value} value={m.value}>{m.label}</option>
                 ))}
               </select>
-            </div>
-            
-            {/* Day slider */}
-            <div className="flex-grow">
-              <div className="flex justify-between mb-1">
-                <label className="text-xs text-gray-400">Day: {day}</label>
-                <span className="text-xs text-gray-400">{daysInMonth} days</span>
-              </div>
+              
               <input
-                type="range"
+                type="number"
                 min={1}
                 max={daysInMonth}
                 value={day}
-                onChange={(e) => setDay(Number(e.target.value))}
-                className="w-full bg-gray-700 rounded-lg appearance-none cursor-pointer h-2 accent-violet-600"
+                onChange={(e) => setDay(Math.min(Math.max(1, Number(e.target.value)), daysInMonth))}
+                className="w-16 bg-gray-900 text-white border border-gray-700 rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500"
               />
-              <div className="flex justify-between mt-1 text-xs text-gray-500">
-                <span>1</span>
-                <span>{Math.floor(daysInMonth / 2)}</span>
-                <span>{daysInMonth}</span>
-              </div>
             </div>
           </div>
           
-          {/* Search bar as a separate row below */}
-          <div className="flex-grow">
+          {/* Search bar full width */}
+          <div className="md:col-span-4">
             <div className="relative">
               <input
                 type="text"
-                placeholder="Search news by title, source, region, category..."
+                placeholder="Search trends by name, tags, regions, or influencers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full bg-gray-900 text-white border border-gray-700 rounded pl-10 pr-4 py-2 focus:outline-none focus:ring-1 focus:ring-violet-500"
@@ -458,75 +434,149 @@ const NewsAnalysis = () => {
             </div>
           </div>
         </div>
-        
-        {/* Current date display */}
-        <div className="flex items-center mt-4 text-sm">
-          <Calendar size={16} className="text-violet-400 mr-2" />
-          <span className="text-white">Selected date: {day} {availableMonths.find(m => m.value === month)?.label} {year}</span>
-        </div>
       </div>
       
-      {/* News articles table with scrolling */}
+      {/* Summary cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400">Total Trends</p>
+              <p className="text-2xl font-bold text-white">{filteredTrends.length}</p>
+            </div>
+            <div className="p-2 bg-blue-900/30 rounded-full">
+              <Hash className="text-blue-400" size={20} />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400">Avg. Growth</p>
+              <p className="text-2xl font-bold text-white">
+                {filteredTrends.length > 0 
+                  ? (filteredTrends.reduce((sum, trend) => sum + trend.growth, 0) / filteredTrends.length).toFixed(1)
+                  : 0}%
+              </p>
+            </div>
+            <div className="p-2 bg-green-900/30 rounded-full">
+              <TrendingUp className="text-green-400" size={20} />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400">Total Mentions</p>
+              <p className="text-2xl font-bold text-white">
+                {filteredTrends.reduce((sum, trend) => sum + trend.currentMentions, 0).toLocaleString()}
+              </p>
+            </div>
+            <div className="p-2 bg-purple-900/30 rounded-full">
+              <BarChart2 className="text-purple-400" size={20} />
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-800">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-400">Top Region</p>
+              <p className="text-2xl font-bold text-white">
+                {filteredTrends.length > 0 
+                  ? filteredTrends[0]?.topRegions[0]?.name || 'N/A'
+                  : 'N/A'}
+              </p>
+            </div>
+            <div className="p-2 bg-amber-900/30 rounded-full">
+              <MapPin className="text-amber-400" size={20} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Trend Growth Chart */}
+      {filteredTrends.length > 0 && (
+        <div className="bg-black bg-opacity-40 rounded-xl p-4 border border-gray-800">
+          <div className="h-80">
+            <Line options={chartOptions} data={chartData} />
+          </div>
+          <div className="mt-2 text-xs text-gray-500 italic text-center">
+            Current trends growth rate vs. mentions volume
+          </div>
+        </div>
+      )}
+      
+      {/* Trends table with scrolling */}
       <div className="bg-black bg-opacity-40 rounded-xl border border-gray-800 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-800 flex justify-between items-center sticky top-0">
+        <div className="px-4 py-3 border-b border-gray-800 flex justify-between items-center sticky top-0 bg-gray-900/80 backdrop-blur-sm z-10">
           <h3 className="text-lg font-bold text-white">
-            News Articles <span className="text-sm font-normal text-gray-400">({filteredArticles.length} articles)</span>
+            Trending Topics <span className="text-sm font-normal text-gray-400">({filteredTrends.length} trends)</span>
           </h3>
           <div className="flex items-center space-x-2">
-            <span className="text-xs px-2 py-0.5 bg-amber-900/30 text-amber-400 rounded-full flex items-center">
-              <AlertTriangle size={12} className="mr-1" /> Misinformation
+            <span className="text-xs px-2 py-0.5 bg-violet-900/30 text-violet-400 rounded-full flex items-center">
+              <TrendingUp size={12} className="mr-1" /> Growth
             </span>
-            <span className="text-xs px-2 py-0.5 bg-emerald-900/30 text-emerald-400 rounded-full flex items-center">
-              <Check size={12} className="mr-1" /> Verified
+            <span className="text-xs px-2 py-0.5 bg-blue-900/30 text-blue-400 rounded-full flex items-center">
+              <BarChart2 size={12} className="mr-1" /> Mentions
+            </span>
+            <span className="text-xs px-2 py-0.5 bg-green-900/30 text-green-400 rounded-full flex items-center">
+              <Users size={12} className="mr-1" /> Demographics
             </span>
           </div>
         </div>
         
-        <div className="overflow-y-auto max-h-[400px]">
+        <div className="overflow-y-auto max-h-[600px]">
           {loading ? (
             <div className="flex items-center justify-center p-8">
-              <div className="loader-small"></div>
-              <span className="ml-3 text-gray-300">Loading articles...</span>
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-violet-500"></div>
+              <span className="ml-3 text-gray-300">Loading trends...</span>
             </div>
-          ) : filteredArticles.length === 0 ? (
+          ) : filteredTrends.length === 0 ? (
             <div className="text-center py-8 text-gray-400">
-              No articles found for your search criteria
+              No trends found matching your criteria
             </div>
           ) : (
             <div className="divide-y divide-gray-800">
-              {filteredArticles.map(article => (
-                <div key={article.id} className="transition-all duration-200">
-                  {/* News item header - always visible */}
+              {filteredTrends.map(trend => (
+                <div key={trend.id} className="transition-all duration-200">
+                  {/* Trend item header - always visible */}
                   <div 
-                    onClick={() => toggleExpand(article.id)} 
+                    onClick={() => toggleExpand(trend.id)} 
                     className={`px-4 py-3 flex items-center justify-between cursor-pointer hover:bg-gray-900/50
-                      ${expandedNewsId === article.id ? 'bg-violet-900/20 border-violet-700' : ''}`
+                      ${expandedTrendId === trend.id ? 'bg-violet-900/20 border-violet-700' : ''}`
                     }
                   >
                     <div className="flex items-center">
                       <div className="mr-3">
-                        {article.isMisinformation ? (
-                          <AlertTriangle size={16} className="text-amber-500" />
-                        ) : (
-                          <Check size={16} className="text-emerald-500" />
-                        )}
+                        <Hash size={16} className="text-blue-400" />
                       </div>
-                      <div>
-                        <h4 className="font-medium text-white">{article.title}</h4>
-                        <div className="flex items-center space-x-2 text-xs mt-1">
-                          <span className="text-gray-400">{article.source}</span>
-                          <span className="text-gray-600">•</span>
-                          <span className="text-gray-400">{article.region}</span>
-                          <span className="text-gray-600">•</span>
-                          <div className="flex items-center text-gray-400">
-                            <Clock size={12} className="mr-1" />
-                            {formatTime(article.timestamp)}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-white">{trend.name}</h4>
+                          <span className={`text-xs px-2 py-1 rounded-full ${getGrowthColor(trend.growth)}`}>
+                            {trend.growth}% growth
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between mt-1">
+                          <div className="flex items-center space-x-4 text-xs">
+                            <span className="text-gray-400 flex items-center">
+                              <BarChart2 size={12} className="mr-1" /> {trend.currentMentions.toLocaleString()} mentions
+                            </span>
+                            <span className="text-gray-400 flex items-center">
+                              <Users size={12} className="mr-1" /> {Object.entries(trend.demographics.gender).sort((a, b) => b[1] - a[1])[0][0]} {Math.round(Object.entries(trend.demographics.gender).sort((a, b) => b[1] - a[1])[0][1])}%
+                            </span>
+                            <span className="text-gray-400 flex items-center">
+                              <MapPin size={12} className="mr-1" /> {trend.topRegions[0]?.name || 'N/A'} ({trend.topRegions[0]?.share || 0}%)
+                            </span>
                           </div>
                         </div>
                       </div>
                     </div>
                     <div>
-                      {expandedNewsId === article.id ? (
+                      {expandedTrendId === trend.id ? (
                         <ChevronUp size={16} className="text-violet-400" />
                       ) : (
                         <ChevronDown size={16} className="text-gray-400" />
@@ -535,28 +585,136 @@ const NewsAnalysis = () => {
                   </div>
                   
                   {/* Expanded content */}
-                  {expandedNewsId === article.id && (
+                  {expandedTrendId === trend.id && (
                     <div className="px-4 py-3 bg-gray-900/30 border-t border-gray-800">
-                      <div className="pl-8">
-                        <p className="text-gray-300 text-sm">{article.summary}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <div className="flex items-center space-x-2">
-                            <span className={`
-                              text-xs px-2 py-1 rounded-full
-                              ${article.isMisinformation 
-                                ? 'bg-amber-900/30 text-amber-400' 
-                                : 'bg-emerald-900/30 text-emerald-400'}
-                            `}>
-                              {article.isMisinformation ? 'Misinformation' : 'Verified Content'}
-                            </span>
-                            
-                            {article.urgency && (
-                              <span className={`text-xs px-2 py-1 rounded-full ${getUrgencyStyles(article.urgency)}`}>
-                                {article.urgency.charAt(0).toUpperCase() + article.urgency.slice(1)} Priority
-                              </span>
-                            )}
+                      <div className="pl-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Left column */}
+                        <div className="space-y-4">
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-2">Related Tags</h5>
+                            <div className="flex flex-wrap gap-2">
+                              {trend.relatedTags.map(tag => (
+                                <span key={tag} className="text-xs px-2 py-1 bg-gray-800 text-gray-300 rounded-full">
+                                  #{tag}
+                                </span>
+                              ))}
+                            </div>
                           </div>
-                          <span className="text-xs text-gray-500">Category: {article.category}</span>
+                          
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-2">Top Regions</h5>
+                            <div className="space-y-2">
+                              {trend.topRegions.map(region => (
+                                <div key={region.name} className="flex items-center justify-between">
+                                  <span className="text-xs text-gray-400">{region.name}</span>
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-xs text-white">{region.share}%</span>
+                                    <span className={`text-xs ${region.growth > 15 ? 'text-green-400' : region.growth > 10 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                      ({region.growth}%)
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-2">Peak Activity Hours</h5>
+                            <div className="flex flex-wrap gap-2">
+                              {trend.peakHours.map(hour => (
+                                <span key={hour} className="text-xs px-2 py-1 bg-gray-800 text-gray-300 rounded-full">
+                                  {hour}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Middle column */}
+                        <div className="space-y-4">
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-2">Demographics</h5>
+                            <div className="space-y-3">
+                              <div>
+                                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                  <span>Age Groups</span>
+                                  <span>Distribution</span>
+                                </div>
+                                {renderDemographicBar(trend.demographics.age)}
+                                <div className="flex justify-between mt-1">
+                                  {Object.entries(trend.demographics.age).map(([age, percent]) => (
+                                    <span key={age} className="text-xs text-gray-400">{age}: {percent}%</span>
+                                  ))}
+                                </div>
+                              </div>
+                              
+                              <div>
+                                <div className="flex justify-between text-xs text-gray-400 mb-1">
+                                  <span>Gender</span>
+                                  <span>Distribution</span>
+                                </div>
+                                {renderDemographicBar(trend.demographics.gender)}
+                                <div className="flex justify-between mt-1">
+                                  {Object.entries(trend.demographics.gender).map(([gender, percent]) => (
+                                    <span key={gender} className="text-xs text-gray-400">
+                                      {gender.charAt(0).toUpperCase() + gender.slice(1)}: {percent}%
+                                    </span>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-2">Sentiment Analysis</h5>
+                            {renderSentimentIndicator(trend.sentiment)}
+                          </div>
+                        </div>
+                        
+                        {/* Right column */}
+                        <div className="space-y-4">
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-2">Key Influencers</h5>
+                            <div className="space-y-2">
+                              {trend.influencers.map(influencer => (
+                                <div key={influencer.name} className="flex items-center justify-between">
+                                  <span className="text-xs text-white">{influencer.name}</span>
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-xs text-gray-400">{influencer.followers}</span>
+                                    <span className="text-xs text-green-400">{influencer.engagement}% engagement</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-2">Related Brands</h5>
+                            <div className="flex flex-wrap gap-2">
+                              {trend.relatedBrands.map(brand => (
+                                <span key={brand} className="text-xs px-2 py-1 bg-gray-800 text-gray-300 rounded-full">
+                                  {brand}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-sm font-medium text-gray-300 mb-2">Historical Trend</h5>
+                            <div className="space-y-2">
+                              {Object.entries(trend.historicalData).map(([date, data]) => (
+                                <div key={date} className="flex items-center justify-between">
+                                  <span className="text-xs text-gray-400">{new Date(date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</span>
+                                  <div className="flex items-center space-x-2">
+                                    <span className="text-xs text-white">{data.mentions}</span>
+                                    <span className={`text-xs ${data.growth > 15 ? 'text-green-400' : data.growth > 10 ? 'text-yellow-400' : 'text-gray-400'}`}>
+                                      ({data.growth}%)
+                                    </span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -571,4 +729,4 @@ const NewsAnalysis = () => {
   );
 };
 
-export default NewsAnalysis;
+export default TrendAnalysis;

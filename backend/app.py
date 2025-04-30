@@ -4,11 +4,11 @@ from networkx.readwrite import json_graph  # type: ignore
 from community_detection import detect_communities, analyze_centrality
 from graph_operations import calculate_graph_metrics
 import os
-from flask import Flask, jsonify, request
-from flask import send_file
-import matplotlib.pyplot as plt
+from flask import Flask, jsonify, request # type: ignore
+from flask import send_file # type: ignore
+import matplotlib.pyplot as plt # type: ignore
 from chatbot import get_chatbot_response
-from flask_cors import CORS
+from flask_cors import CORS # type: ignore
 import random
 
 

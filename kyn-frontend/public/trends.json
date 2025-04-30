@@ -1,0 +1,150 @@
+
+{
+    "trends": [
+      {
+        "id": 1,
+        "name": "Cryptocurrency",
+        "currentMentions": 220,
+        "growth": 12.5,
+        "relatedTags": ["Bitcoin", "Blockchain", "NFT", "Web3", "DeFi", "Ethereum"],
+        "topRegions": [
+          { "name": "Delhi", "share": 32, "growth": 15.2 },
+          { "name": "Bangalore", "share": 28, "growth": 18.7 },
+          { "name": "Mumbai", "share": 22, "growth": 10.5 }
+        ],
+        "demographics": {
+          "age": { "18-24": 42, "25-34": 38, "35-44": 15, "45+": 5 },
+          "gender": { "male": 68, "female": 30, "other": 2 }
+        },
+        "sentiment": { "positive": 58, "neutral": 30, "negative": 12 },
+        "historicalData": {
+          "2025-01-15": { "mentions": 220, "growth": 12.5 },
+          "2025-01-14": { "mentions": 195, "growth": 8.2 },
+          "2025-01-13": { "mentions": 180, "growth": 5.7 },
+          "2025-01-12": { "mentions": 170, "growth": 3.2 }
+        },
+        "influencers": [
+          { "name": "CryptoGuru", "followers": "1.2M", "engagement": 8.7 },
+          { "name": "BlockchainExpert", "followers": "850K", "engagement": 6.5 }
+        ],
+        "relatedBrands": ["CoinSwitch", "WazirX", "CoinDCX"],
+        "peakHours": ["09:00-11:00", "19:00-21:00"]
+      },
+      {
+        "id": 2,
+        "name": "Mental Health",
+        "currentMentions": 202,
+        "growth": 18.3,
+        "relatedTags": ["Wellness", "Therapy", "Mindfulness", "SelfCare", "Anxiety", "Depression"],
+        "topRegions": [
+          { "name": "Bangalore", "share": 35, "growth": 22.1 },
+          { "name": "Mumbai", "share": 28, "growth": 19.5 },
+          { "name": "Delhi", "share": 20, "growth": 15.7 }
+        ],
+        "demographics": {
+          "age": { "18-24": 38, "25-34": 45, "35-44": 12, "45+": 5 },
+          "gender": { "male": 45, "female": 52, "other": 3 }
+        },
+        "sentiment": { "positive": 65, "neutral": 25, "negative": 10 },
+        "historicalData": {
+          "2025-01-15": { "mentions": 202, "growth": 18.3 },
+          "2025-01-14": { "mentions": 170, "growth": 15.0 },
+          "2025-01-13": { "mentions": 148, "growth": 12.8 },
+          "2025-01-12": { "mentions": 131, "growth": 9.5 }
+        },
+        "influencers": [
+          { "name": "MindfulLiving", "followers": "950K", "engagement": 12.3 },
+          { "name": "TherapyWorks", "followers": "720K", "engagement": 9.8 }
+        ],
+        "relatedBrands": ["BetterHelp", "YourDOST", "Wysa"],
+        "peakHours": ["07:00-09:00", "21:00-23:00"]
+      },
+      {
+        "id": 3,
+        "name": "Sustainability",
+        "currentMentions": 194,
+        "growth": 19.5,
+        "relatedTags": ["Green Energy", "Recycling", "Zero Waste", "ClimateAction", "EcoFriendly", "CarbonFootprint"],
+        "topRegions": [
+          { "name": "National", "share": 40, "growth": 20.5 },
+          { "name": "Bangalore", "share": 25, "growth": 18.7 },
+          { "name": "Hyderabad", "share": 18, "growth": 15.2 }
+        ],
+        "demographics": {
+          "age": { "18-24": 35, "25-34": 40, "35-44": 18, "45+": 7 },
+          "gender": { "male": 48, "female": 49, "other": 3 }
+        },
+        "sentiment": { "positive": 72, "neutral": 22, "negative": 6 },
+        "historicalData": {
+          "2025-01-15": { "mentions": 194, "growth": 19.5 },
+          "2025-01-14": { "mentions": 162, "growth": 16.2 },
+          "2025-01-13": { "mentions": 139, "growth": 14.8 },
+          "2025-01-12": { "mentions": 121, "growth": 12.3 }
+        },
+        "influencers": [
+          { "name": "GreenWarrior", "followers": "1.1M", "engagement": 10.5 },
+          { "name": "EcoLife", "followers": "780K", "engagement": 8.9 }
+        ],
+        "relatedBrands": ["TerraCycle", "The Better India", "GoZero"],
+        "peakHours": ["10:00-12:00", "18:00-20:00"]
+      },
+      {
+        "id": 4,
+        "name": "Startup Ideas",
+        "currentMentions": 175,
+        "growth": 20.5,
+        "relatedTags": ["Entrepreneurship", "Funding", "Innovation", "VentureCapital", "PitchDeck", "Bootstrapping"],
+        "topRegions": [
+          { "name": "Bangalore", "share": 45, "growth": 22.7 },
+          { "name": "Delhi", "share": 28, "growth": 19.3 },
+          { "name": "Hyderabad", "share": 15, "growth": 16.8 }
+        ],
+        "demographics": {
+          "age": { "18-24": 28, "25-34": 52, "35-44": 16, "45+": 4 },
+          "gender": { "male": 62, "female": 36, "other": 2 }
+        },
+        "sentiment": { "positive": 68, "neutral": 27, "negative": 5 },
+        "historicalData": {
+          "2025-01-15": { "mentions": 175, "growth": 20.5 },
+          "2025-01-14": { "mentions": 145, "growth": 18.2 },
+          "2025-01-13": { "mentions": 122, "growth": 16.7 },
+          "2025-01-12": { "mentions": 104, "growth": 14.3 }
+        },
+        "influencers": [
+          { "name": "StartupGuru", "followers": "1.5M", "engagement": 11.2 },
+          { "name": "VCInsider", "followers": "920K", "engagement": 9.5 }
+        ],
+        "relatedBrands": ["AngelList", "Y Combinator", "Sequoia"],
+        "peakHours": ["08:00-10:00", "20:00-22:00"]
+      },
+      {
+        "id": 5,
+        "name": "AI Technology",
+        "currentMentions": 168,
+        "growth": 22.8,
+        "relatedTags": ["MachineLearning", "ChatGPT", "DeepLearning", "NeuralNetworks", "LLMs", "GenerativeAI"],
+        "topRegions": [
+          { "name": "Bangalore", "share": 42, "growth": 24.3 },
+          { "name": "Hyderabad", "share": 25, "growth": 21.7 },
+          { "name": "Pune", "share": 18, "growth": 19.2 }
+        ],
+        "demographics": {
+          "age": { "18-24": 32, "25-34": 48, "35-44": 16, "45+": 4 },
+          "gender": { "male": 72, "female": 26, "other": 2 }
+        },
+        "sentiment": { "positive": 65, "neutral": 30, "negative": 5 },
+        "historicalData": {
+          "2025-01-15": { "mentions": 168, "growth": 22.8 },
+          "2025-01-14": { "mentions": 136, "growth": 20.1 },
+          "2025-01-13": { "mentions": 113, "growth": 18.7 },
+          "2025-01-12": { "mentions": 95, "growth": 16.2 }
+        },
+        "influencers": [
+          { "name": "AI_Researcher", "followers": "1.3M", "engagement": 12.8 },
+          { "name": "TechFuturist", "followers": "980K", "engagement": 10.3 }
+        ],
+        "relatedBrands": ["OpenAI", "DeepMind", "Anthropic"],
+        "peakHours": ["09:00-11:00", "19:00-21:00"]
+      }
+    ]
+  }

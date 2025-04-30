@@ -20,7 +20,7 @@ const UrgentInsightsWidget = ({ setChatbotCollapsed, setInputValue }) => {
 
 **Impact**: The misinformation caused confusion among attendees, potentially affecting public safety during the massive religious gathering. It also strained local administrative resources in Uttar Pradesh, a politically significant state, as authorities had to divert efforts to counter false narratives during a high-stakes event.
 
-**Relevance to Sarvam**: Lucknow’s high misinformation intensity reflects its proximity to Prayagraj and its role in Uttar Pradesh’s political and cultural landscape. This example highlights the need for real-time monitoring of event-specific misinformation in regions hosting large gatherings, especially in politically charged areas.
+**Relevance to SocialSage**: Lucknow’s high misinformation intensity reflects its proximity to Prayagraj and its role in Uttar Pradesh’s political and cultural landscape. This example highlights the need for real-time monitoring of event-specific misinformation in regions hosting large gatherings, especially in politically charged areas.
 			`,
 			query: "Show me details about the Lucknow misinformation data.",
 			urgency: "high"
@@ -36,7 +36,7 @@ const UrgentInsightsWidget = ({ setChatbotCollapsed, setInputValue }) => {
 
 **Impact**: The misinformation heightened tensions in Srinagar, where historical conflicts make the region vulnerable to communal narratives. It risked inciting violence and further eroding trust in media, especially among local communities already skeptical of mainstream narratives.
 
-**Relevance to Sarvam**: Srinagar’s high misinformation intensity reflects its geopolitical sensitivity. This example emphasizes the need for targeted fact-checking in conflict-prone areas to prevent misinformation from fueling unrest.
+**Relevance to SocialSage**: Srinagar’s high misinformation intensity reflects its geopolitical sensitivity. This example emphasizes the need for targeted fact-checking in conflict-prone areas to prevent misinformation from fueling unrest.
 			`,
 			query: "Show me details about the Srinagar misinformation data.",
 			urgency: "critical"
@@ -52,7 +52,7 @@ const UrgentInsightsWidget = ({ setChatbotCollapsed, setInputValue }) => {
 
 **Impact**: The false information has resulted in financial losses among unassuming investors and has prompted warnings from local regulatory bodies.
 
-\n**Relevance to Sarvam**: The trend underscores the necessity for vigilant monitoring of financial misinformation to safeguard consumers in metropolitan regions.
+\n**Relevance to SocialSage**: The trend underscores the necessity for vigilant monitoring of financial misinformation to safeguard consumers in metropolitan regions.
 			`,
 			query: "Show me details about the Mumbai misinformation data.",
 			urgency: "medium"
