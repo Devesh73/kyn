@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Tooltip, Legend } from "chart.js";
 
@@ -50,66 +50,99 @@ const InteractionTrends = () => {
       .sort((a, b) => new Date(a.week) - new Date(b.week));
   };
 
-  // Chart data
-  const chartData = {
+  // Memoize chart data and options to prevent re-calculation on every render
+  const chartData = useMemo(() => ({
     labels: aggregatedTrends.map((item) => item.week),
     datasets: [
       {
         label: "Interactions Per Week",
         data: aggregatedTrends.map((item) => item.count),
-        backgroundColor: "rgba(30, 144, 255, 0.8)", // Stylish blue
-        borderColor: "rgba(30, 144, 255, 1)",
+        backgroundColor: "rgba(99, 102, 241, 0.7)", // indigo-500
+        borderColor: "rgba(99, 102, 241, 1)", // indigo-500
         borderWidth: 1,
+        borderRadius: 4,
       },
     ],
-  };
+  }), [aggregatedTrends]);
 
-  const chartOptions = {
+  const chartOptions = useMemo(() => ({
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
+        position: 'top',
         labels: {
-          color: "white", // Match dark theme
+          color: "#475569", // slate-600
+          font: {
+            size: 12,
+            family: 'Inter, sans-serif',
+          },
         },
       },
       tooltip: {
-        backgroundColor: "rgba(30, 30, 30, 0.8)",
-        titleColor: "white",
-        bodyColor: "white",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        titleColor: "#1e293b", // slate-800
+        bodyColor: "#475569", // slate-600
+        borderColor: '#e2e8f0', // slate-200
+        borderWidth: 1,
+        padding: 10,
+        titleFont: { weight: 'bold' },
       },
     },
     scales: {
       x: {
         ticks: {
-          color: "white", // Match dark theme
+          color: "#64748b", // slate-500
+          font: {
+            size: 11,
+            family: 'Inter, sans-serif',
+          },
         },
         grid: {
-          color: "rgba(255, 255, 255, 0.1)", // Subtle grid lines
+          color: "#f1f5f9", // slate-100
         },
       },
       y: {
         ticks: {
-          color: "white", // Match dark theme
+          color: "#64748b", // slate-500
+          font: {
+            size: 11,
+            family: 'Inter, sans-serif',
+          },
         },
         grid: {
-          color: "rgba(255, 255, 255, 0.1)", // Subtle grid lines
+          color: "#f1f5f9", // slate-100
         },
         beginAtZero: true,
       },
     },
-  };
+  }), []);
 
   return (
-    <div className="relative flex flex-col rounded-xl bg-slate-950 p-4 shadow-2xl h-[500px]">
-      {/* Title */}
-      <h2 className="text-2xl font-semibold text-white mb-4">Interaction Trends</h2>
-      {aggregatedTrends.length > 0 ? (
-        <Bar data={chartData} options={chartOptions} />
-      ) : (
-        <p className="text-white">Loading trends...</p>
-      )}
+    <div className="bg-gradient-to-br from-white to-slate-50 rounded-lg border border-slate-200/80 shadow-lg shadow-indigo-500/10 flex flex-col h-[420px]">
+        {/* Title */}
+        <div className="p-3 border-b border-slate-200/80">
+            <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-50 to-indigo-100 border border-indigo-200/80">
+                    <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                    </svg>
+                </div>
+                <h2 className="text-sm font-medium text-slate-800">Interaction Trends</h2>
+            </div>
+        </div>
+        {/* Chart */}
+        <div className="flex-1 p-3 overflow-hidden">
+            {aggregatedTrends.length > 0 ? (
+                <Bar data={chartData} options={chartOptions} />
+            ) : (
+                <div className="h-full flex items-center justify-center">
+                    <p className="text-sm text-slate-500">Loading trends...</p>
+                </div>
+            )}
+        </div>
     </div>
   );
 };
 
-export default InteractionTrends;
+export default React.memo(InteractionTrends);

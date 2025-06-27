@@ -3,6 +3,7 @@ import json
 import requests
 import google.generativeai as genai
 from dotenv import load_dotenv
+import time
 
 # Load environment variables
 load_dotenv()
@@ -11,14 +12,15 @@ BASE_API_URL = "http://127.0.0.1:5000/api"
 
 
 # Configure Gemini SDK
-genai.configure(api_key=API_KEY)
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 generation_config = {
     "temperature": 0.7,
     "top_p": 0.9,
     "max_output_tokens": 2000,
 }
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-flash", generation_config=generation_config
+    model_name="gemini-2.5-flash-lite-preview-06-17",
+    generation_config=generation_config,
 )
 chat_session = model.start_chat(history=[])
 
@@ -149,20 +151,31 @@ def extract_user_ids(user_input):
 # Classify user query and trigger APIs
 def classify_and_trigger_apis(user_input):
     classification_prompt = f"""
-    You are an API classifier. Based on the user query below, decide which APIs to call.
-    Select all relevant APIs from the following list:
-    - trending_interests
-    - active_communities
-    - influence_analysis
-    - interaction_trends
-    - user_search (requires user_id)
-    - user_influence (requires user_id)
-    - user_interaction (requires user_id)
-    - recommended_connections (requires user_id)
-    - recommended_communities (requires user_id)
+    You are an expert API classifier for a social media analytics platform. Your task is to select the most relevant API(s) to call based on the user's query.
 
-    Output only the names of the relevant APIs, one per line.
+    Analyze the user's query and choose from the following available APIs:
+    - `trending_interests`: For questions about what topics, keywords, or interests are currently popular or trending.
+    - `active_communities`: For identifying which communities have the most activity, engagement, or members.
+    - `influence_analysis`: For queries about the most influential users, top influencers, users with the most followers, or highest engagement scores.
+    - `interaction_trends`: For analyzing trends in user interactions over time, such as likes, comments, or shares.
+    - `user_search`: To find specific details about a known user (requires user_id).
+    - `user_influence`: To get the specific influence score for a known user (requires user_id).
+    - `user_interaction`: To see the interaction history for a known user (requires user_id).
+    - `recommended_connections`: To find connection recommendations for a known user (requires user_id).
+    - `recommended_communities`: To find community recommendations for a known user (requires user_id).
 
+    **Examples:**
+    - User Query: "Who are the top influencers right now?" -> `influence_analysis`
+    - User Query: "What is the user with most following" -> `influence_analysis`
+    - User Query: "Which communities are most active?" -> `active_communities`
+    - User Query: "What are the trending topics in the Music category?" -> `trending_interests`
+    - User Query: "Show me recommended connections for U123" -> `recommended_connections`
+    - User Query: "Compare the influence of U123 and U456" -> `user_influence`
+    - User Query: "Make a comparison of the prominent users interested in Cryptocurrency and film" -> `influence_analysis`
+    
+    Output only the names of the relevant APIs, one per line. If no specific API is a clear match, do not return anything.
+
+    ---
     User Query: "{user_input}"
     """
     response = chat_session.send_message(classification_prompt)
@@ -182,7 +195,212 @@ def handle_irrelevant_queries(user_input):
     return response.text.strip()
 
 
-# Process and respond to queries
+# Enhanced chatbot response with step-by-step progress
+def get_chatbot_response_with_steps(user_input, progress_callback=None):
+    """
+    Enhanced chatbot response function that yields step-by-step progress
+    """
+
+    def emit_step(step_type, message, status="processing", data=None):
+        step_info = {
+            "step": step_type,
+            "message": message,
+            "status": status,
+            "timestamp": time.time(),
+            "data": data,
+        }
+        if progress_callback:
+            progress_callback(step_info)
+        return step_info
+
+    try:
+        # Step 1: Query Analysis
+        emit_step(
+            "analysis",
+            "Analyzing your query to understand what information you need...",
+            "processing",
+        )
+
+        api_triggers = classify_and_trigger_apis(user_input)
+        emit_step(
+            "analysis",
+            f"Identified {len(api_triggers)} relevant data sources",
+            "completed",
+            {"apis": api_triggers},
+        )
+
+        # Step 2: User ID Extraction
+        emit_step(
+            "user_extraction", "Extracting user IDs from your query...", "processing"
+        )
+
+        user_ids = extract_user_ids(user_input)
+        if user_ids:
+            emit_step(
+                "user_extraction",
+                f"Found user IDs: {', '.join(user_ids)}",
+                "completed",
+                {"user_ids": user_ids},
+            )
+        else:
+            emit_step(
+                "user_extraction", "No specific user IDs found in query", "completed"
+            )
+
+        # Step 3: Data Collection
+        data_payload = {}
+
+        if api_triggers:
+            emit_step(
+                "data_collection",
+                f"Starting data collection from {len(api_triggers)} source(s)...",
+                "processing",
+            )
+
+            collected_count = 0
+            for trigger in api_triggers:
+                # User-specific API calls
+                if trigger in [
+                    "user_search",
+                    "user_influence",
+                    "user_interaction",
+                    "recommended_connections",
+                    "recommended_communities",
+                ]:
+                    if user_ids:
+                        for user_id in user_ids:
+                            step_message = (
+                                f"Fetching {trigger.replace('_', ' ')} for {user_id}"
+                            )
+                            emit_step(
+                                "api_call",
+                                step_message,
+                                "processing",
+                                {"trigger": trigger, "user_id": user_id},
+                            )
+                            endpoint = API_ENDPOINTS[trigger].format(user_id=user_id)
+                            api_data = fetch_api_data(endpoint, limit=20)
+
+                            if "error" in api_data:
+                                emit_step(
+                                    "api_call",
+                                    f"Failed: {api_data['error']}",
+                                    "error",
+                                    {"trigger": trigger},
+                                )
+                            else:
+                                emit_step(
+                                    "api_call",
+                                    f"Success: {trigger.replace('_', ' ')} for {user_id}",
+                                    "completed",
+                                    {"trigger": trigger, "user_id": user_id},
+                                )
+                                formatted_data = format_data_for_gemini(
+                                    trigger, api_data
+                                )
+                                data_payload[f"{trigger}_{user_id}"] = formatted_data
+                                collected_count += 1
+                    else:
+                        emit_step(
+                            "data_collection",
+                            f"Skipped {trigger}: No user ID provided.",
+                            "warning",
+                        )
+                # General API calls
+                elif trigger in API_ENDPOINTS:
+                    step_message = f"Fetching {trigger.replace('_', ' ')}"
+                    emit_step(
+                        "api_call", step_message, "processing", {"trigger": trigger}
+                    )
+                    endpoint = API_ENDPOINTS[trigger]
+                    api_data = fetch_api_data(endpoint, limit=20)
+
+                    if "error" in api_data:
+                        emit_step(
+                            "api_call",
+                            f"Failed: {api_data['error']}",
+                            "error",
+                            {"trigger": trigger},
+                        )
+                    else:
+                        emit_step(
+                            "api_call",
+                            f"Success: {trigger.replace('_', ' ')}",
+                            "completed",
+                            {"trigger": trigger},
+                        )
+                        formatted_data = format_data_for_gemini(trigger, api_data)
+                        data_payload[trigger] = formatted_data
+                        collected_count += 1
+
+            emit_step(
+                "data_collection",
+                f"Finished data collection. Successfully retrieved data from {collected_count} source(s).",
+                "completed",
+            )
+        else:
+            emit_step(
+                "data_collection",
+                "No data sources required for this query.",
+                "completed",
+            )
+
+        # Step 4: Data Processing
+        if not data_payload:
+            emit_step(
+                "processing",
+                "Processing general query without specific data...",
+                "processing",
+            )
+            time.sleep(0.5)
+            response = handle_irrelevant_queries(user_input)
+            emit_step("processing", "Generated response for general query", "completed")
+            return response, []
+
+        emit_step(
+            "processing",
+            "Processing collected data and generating insights...",
+            "processing",
+        )
+        emit_step("processing", "Data pre-processing complete.", "completed")
+
+        # Step 5: AI Analysis
+        emit_step(
+            "ai_analysis",
+            "Analyzing data with AI to generate comprehensive insights...",
+            "processing",
+        )
+
+        master_prompt = f"""
+        You are an advanced data assistant for a social media platform manager. Based on the user's query and preprocessed data, provide the following:
+        - Clear, user-friendly insights or summaries.
+        - Key trends, patterns, or comparisons.
+        - Summarize recommendations clearly.
+            - For recommended connections, explain which users should connect, why, and the connection strength as a percentage.
+            - For recommended communities, explain the communities that the user might join and the number of shared interests they have.
+        - Use structured responses and avoid technical jargon.
+
+        User Query: {user_input}
+        Preprocessed Data: {json.dumps(data_payload, indent=2)}
+
+        Focus on actionable insights and avoid technical jargon.
+        """
+
+        response = chat_session.send_message(master_prompt)
+        emit_step("ai_analysis", "AI analysis completed successfully", "completed")
+
+        # Step 6: Final Response
+        emit_step("completion", "Response ready!", "completed")
+
+        return response.text.strip(), []
+
+    except Exception as e:
+        error_msg = f"Error processing chatbot response: {str(e)}"
+        emit_step("error", error_msg, "error")
+        return error_msg, []
+
+
+# Process and respond to queries (original function for backward compatibility)
 def get_chatbot_response(user_input):
     try:
         api_triggers = classify_and_trigger_apis(user_input)
@@ -223,7 +441,6 @@ def get_chatbot_response(user_input):
             - For recommended connections, explain which users should connect, why, and the connection strength as a percentage.
             - For recommended communities, explain the communities that the user might join and the number of shared interests they have.
         - Use structured responses and avoid technical jargon.
-
 
         User Query: {user_input}
         Preprocessed Data: {json.dumps(data_payload, indent=2)}

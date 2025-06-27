@@ -44,7 +44,7 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
           id: userId,
           data: { label: user.name },
           position: { x: 0, y: 0 },
-          style: { background: "#4CAF50", color: "#fff", width: 60, height: 60, borderRadius: "50%" },
+          style: { background: "rgb(79, 70, 229)", color: "#fff", width: 60, height: 60, borderRadius: "50%" },
         });
 
         // Add other members as surrounding nodes in a circle
@@ -59,7 +59,7 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
               x: Math.cos(angle) * 300,  // Increase the multiplier for more spread
               y: Math.sin(angle) * 300,  // Increase the multiplier for more spread
             },
-            style: { background: "#4CAF50", color: "#fff", width: 50, height: 50, borderRadius: "50%" },
+            style: { background: "rgb(99, 102, 241)", color: "#fff", width: 50, height: 50, borderRadius: "50%" },
           });
         });
 
@@ -71,7 +71,7 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
               source: interaction.attributes.source_user,
               target: interaction.attributes.target_user,
               label: interaction.attributes.interaction_type,
-              style: { stroke: "#4CAF50" },
+              style: { stroke: "rgba(99, 102, 241, 1)" },
             });
           } else if (interaction.attributes.interaction_type === "followed_by") {
             allEdges.push({
@@ -79,7 +79,7 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
               source: interaction.attributes.target_user,
               target: interaction.attributes.source_user,
               label: interaction.attributes.interaction_type,
-              style: { stroke: "#FF5722" },
+              style: { stroke: "#64748b" },
             });
           }
         });
@@ -138,31 +138,48 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
   };
 
   if (loading) {
-    return <div className="text-white">Loading community details...</div>;
+    return (
+        <div className="bg-slate-50/60 rounded-lg border border-slate-200/40 shadow-sm p-4 h-[700px] flex items-center justify-center">
+            <p className="text-sm text-slate-500">Loading community details...</p>
+        </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-600">{error}</div>;
+    return (
+        <div className="bg-red-50 rounded-lg border border-red-200 shadow-sm p-4 h-[700px] flex items-center justify-center">
+            <p className="text-sm text-red-600">{error}</p>
+        </div>
+    );
   }
 
   return (
-    <div className="bg-slate-950 p-6 rounded-lg shadow-md space-y-4">
-      <h2 className="text-2xl font-bold text-white">Community Graph</h2>
-      <div className="w-full h-[600px] border border-gray-600 rounded-lg shadow-xl bg-slate-900">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeDoubleClick={handleNodeDoubleClick}
-          fitView
-          minZoom={0.1}
-        >
-          <MiniMap />
-          <Controls />
-          <Background />
-        </ReactFlow>
-      </div>
+    <div className="bg-white rounded-lg border border-slate-200/80 shadow-sm flex flex-col h-[700px]">
+        <div className="p-3 border-b border-slate-200/80">
+            <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200/80">
+                    <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M12 10a4 4 0 110-5.292" />
+                    </svg>
+                </div>
+                <h2 className="text-sm font-medium text-slate-800">User's Community Graph</h2>
+            </div>
+        </div>
+        <div className="flex-1 rounded-md overflow-hidden bg-slate-50/50 p-2">
+            <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodesChange={onNodesChange}
+                onEdgesChange={onEdgesChange}
+                onNodeDoubleClick={handleNodeDoubleClick}
+                fitView
+                minZoom={0.1}
+            >
+                <MiniMap />
+                <Controls />
+                <Background />
+            </ReactFlow>
+        </div>
     </div>
   );
 };

@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Loader from "../Loader"; // Assuming you have a Loader component for loading states
 
 const UserInfluenceCard = ({ userId }) => {
   const [influence, setInfluence] = useState(null);
@@ -40,28 +39,46 @@ const UserInfluenceCard = ({ userId }) => {
   };
 
   if (loading) {
-    return <Loader />;
+    return (
+        <div className="bg-slate-50/60 rounded-lg border border-slate-200/40 shadow-sm p-4 h-96 flex items-center justify-center">
+            <p className="text-sm text-slate-500">Loading user influence...</p>
+        </div>
+    );
   }
 
   if (error) {
-    return <p className="text-red-600">{error}</p>;
+    return (
+        <div className="bg-red-50 rounded-lg border border-red-200 shadow-sm p-4 h-96 flex items-center justify-center">
+            <p className="text-sm text-red-600">{error}</p>
+        </div>
+    );
   }
 
   const influencePercentage = calculateInfluencePercentage(influence);
 
   return (
-    <div className="relative flex flex-col rounded-xl bg-gradient-to-r from-purple-500 to-indigo-600 p-6 shadow-2xl h-[380px] w-full md:w-1/2 lg:w-1/3 mx-auto">
-      <h2 className="text-2xl font-semibold text-white mb-4">User Influence</h2>
-      <h3 className="text-sm font-semibold text-white mb-4">Influence for User {userId}</h3>
-      
-      {influence ? (
-        <div className="flex mt-10 flex-col items-center">
-          <div className="text-6xl font-bold text-white mb-4">{influencePercentage}%</div>
-          <div className="text-lg font-medium text-white">Overall Influence</div>
+    <div className="bg-white rounded-lg border border-slate-200/80 shadow-sm flex flex-col h-96">
+        <div className="p-3 border-b border-slate-200/80">
+            <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200/80">
+                    <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h2 className="text-sm font-medium text-slate-800">User Influence</h2>
+            </div>
         </div>
-      ) : (
-        <p className="text-sm text-gray-200">No influence data available for this user.</p>
-      )}
+      
+        <div className="flex-1 flex flex-col items-center justify-center p-4">
+            {influence ? (
+                <>
+                    <div className="text-6xl font-bold text-slate-800">{influencePercentage}%</div>
+                    <div className="text-lg font-medium text-slate-500">Overall Influence</div>
+                </>
+            ) : (
+                <p className="text-sm text-slate-500">No influence data available for this user.</p>
+            )}
+        </div>
     </div>
   );
 };

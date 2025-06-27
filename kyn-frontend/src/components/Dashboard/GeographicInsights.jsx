@@ -62,45 +62,69 @@ const GeographicInsights = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading geographic insights...</div>;
+    return (
+        <div className="bg-slate-50/60 rounded-lg border border-slate-200/40 shadow-sm p-4 h-[590px] flex items-center justify-center">
+            <p className="text-sm text-slate-500">Loading geographic insights...</p>
+        </div>
+    );
   }
 
   if (error) {
-    return <div className="text-red-500">{error}</div>;
+    return (
+        <div className="bg-red-50 rounded-lg border border-red-200 shadow-sm p-4 h-[590px] flex items-center justify-center">
+            <p className="text-sm text-red-600">{error}</p>
+        </div>
+    );
   }
 
   return (
-    <div className="relative flex flex-col rounded-xl bg-slate-950 p-4 shadow-2xl z-0 h-[590px]">
-      <MapContainer
-        center={[0, 0]}
-        zoom={2}
-        scrollWheelZoom={true}
-        className="w-full h-full rounded-lg"
-        maxBounds={[
-          [-90, -180],
-          [90, 180],
-        ]} // Prevent infinite zoom
-        maxBoundsViscosity={1.0} // Smooth bounding
-        maxZoom={18} // Limit max zoom
-        minZoom={2} // Limit min zoom to prevent over zoom out
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        />
-        {locationData.map(({ name, coordinates }) => (
-          <Marker key={name} position={coordinates}>
-            <Tooltip>{name}</Tooltip>
-            <Popup>
-              <div>
-                <h3>{name}</h3>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+    <div className="bg-white rounded-lg border border-slate-200/80 shadow-sm h-[590px] flex flex-col">
+        {/* Title */}
+        <div className="p-3 border-b border-slate-200/80">
+            <div className="flex items-center gap-2">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200/80">
+                    {/* Icon for Geographic Insights */}
+                    <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <h2 className="text-sm font-medium text-slate-800">Geographic Insights</h2>
+            </div>
+        </div>
+        {/* Map */}
+        <div className="flex-1 p-3">
+            <MapContainer
+                center={[20, 0]}
+                zoom={2}
+                scrollWheelZoom={true}
+                className="w-full h-full rounded-md"
+                maxBounds={[
+                [-90, -180],
+                [90, 180],
+                ]} // Prevent infinite zoom
+                maxBoundsViscosity={1.0} // Smooth bounding
+                maxZoom={18} // Limit max zoom
+                minZoom={2} // Limit min zoom to prevent over zoom out
+            >
+                <TileLayer
+                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                />
+                {locationData.map(({ name, coordinates }) => (
+                <Marker key={name} position={coordinates}>
+                    <Tooltip>{name}</Tooltip>
+                    <Popup>
+                    <div>
+                        <h3>{name}</h3>
+                    </div>
+                    </Popup>
+                </Marker>
+                ))}
+            </MapContainer>
+        </div>
     </div>
   );
 };
 
-export default GeographicInsights;
+export default React.memo(GeographicInsights);

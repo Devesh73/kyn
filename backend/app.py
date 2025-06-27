@@ -4,12 +4,15 @@ from networkx.readwrite import json_graph  # type: ignore
 from community_detection import detect_communities, analyze_centrality
 from graph_operations import calculate_graph_metrics
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Response, stream_template
 from flask import send_file
 import matplotlib.pyplot as plt
-from chatbot import get_chatbot_response
+from chatbot import get_chatbot_response, get_chatbot_response_with_steps
 from flask_cors import CORS
 import random
+import time
+import threading
+from queue import Queue
 
 
 # Get the absolute path to the data files
@@ -519,6 +522,99 @@ def chatbot_endpoint():
         return jsonify({"response": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/chat-steps", methods=["POST"])
+def chatbot_steps_endpoint():
+    try:
+        """
+        Flask endpoint for chatbot interaction with step-by-step progress updates.
+        """
+        data = request.get_json()
+        user_input = data.get("message", "")
+        if not user_input:
+            return jsonify({"error": "Message is required."}), 400
+
+        response = get_chatbot_response_with_steps(user_input)
+        return jsonify({"response": response})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/chat-stream", methods=["POST", "OPTIONS"])
+def chatbot_stream_endpoint():
+    """
+    Server-Sent Events endpoint for real-time chatbot step updates using a queue.
+    """
+    if request.method == "OPTIONS":
+        return Response(
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Content-Type",
+                "Access-Control-Allow-Methods": "POST, OPTIONS",
+            }
+        )
+
+    data = request.get_json()
+    user_input = data.get("message", "")
+    if not user_input:
+        return jsonify({"error": "Message is required."}), 400
+
+    def generate_steps_from_queue():
+        # 1. Create a queue
+        q = Queue()
+
+        def step_callback(step_info):
+            # 3. The callback puts items into the queue
+            q.put(step_info)
+
+        def run_chatbot():
+            # 4. Run the chatbot in a separate thread
+            try:
+                final_response, _ = get_chatbot_response_with_steps(
+                    user_input, step_callback
+                )
+                final_data = {
+                    "step": "final_response",
+                    "message": final_response,
+                    "status": "completed",
+                    "timestamp": time.time(),
+                    "is_final": True,
+                }
+                q.put(final_data)
+            except Exception as e:
+                error_data = {
+                    "step": "error",
+                    "message": f"An error occurred: {str(e)}",
+                    "status": "error",
+                    "timestamp": time.time(),
+                    "is_final": True,
+                }
+                q.put(error_data)
+            finally:
+                # 6. Add a sentinel value to signal the end
+                q.put(None)
+
+        thread = threading.Thread(target=run_chatbot)
+        thread.start()
+
+        # 2. The generator yields items from the queue
+        while True:
+            item = q.get()  # This will block until an item is available
+            if item is None:
+                # 7. Stop when the sentinel is received
+                break
+            yield f"data: {json.dumps(item)}\n\n"
+
+    return Response(
+        generate_steps_from_queue(),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "Access-Control-Allow-Origin": "*",
+        },
+    )
 
 
 if __name__ == "__main__":
