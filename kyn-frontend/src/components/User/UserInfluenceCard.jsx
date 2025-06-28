@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 
-const UserInfluenceCard = ({ userId }) => {
+const UserInfluenceCard = ({ userId, isDarkTheme }) => {
   const [influence, setInfluence] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -40,8 +40,8 @@ const UserInfluenceCard = ({ userId }) => {
 
   if (loading) {
     return (
-        <div className="bg-slate-50/60 rounded-lg border border-slate-200/40 shadow-sm p-4 h-96 flex items-center justify-center">
-            <p className="text-sm text-slate-500">Loading user influence...</p>
+        <div className={`${isDarkTheme ? 'bg-black' : 'bg-slate-50/60'} rounded-lg border ${isDarkTheme ? 'border-neutral-800' : 'border-slate-200/40'} shadow-sm p-4 h-96 flex items-center justify-center`}>
+            <p className={`text-sm ${isDarkTheme ? 'text-neutral-400' : 'text-slate-500'}`}>Loading user influence...</p>
         </div>
     );
   }
@@ -57,26 +57,26 @@ const UserInfluenceCard = ({ userId }) => {
   const influencePercentage = calculateInfluencePercentage(influence);
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200/80 shadow-sm flex flex-col h-96">
-        <div className="p-3 border-b border-slate-200/80">
+    <div className={`${isDarkTheme ? 'bg-black' : 'bg-white'} rounded-lg border ${isDarkTheme ? 'border-neutral-800' : 'border-slate-200/80'} shadow-md hover:shadow-xl transition-shadow duration-200 flex flex-col h-96`}>
+        <div className={`p-3 border-b ${isDarkTheme ? 'border-neutral-800' : 'border-slate-200/80'}`}>
             <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200/80">
-                    <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${isDarkTheme ? 'bg-purple-900/50 border-purple-800/80' : 'bg-indigo-50 border-indigo-200/80'} border shadow-sm`}>
+                    <svg className={`w-4 h-4 ${isDarkTheme ? 'text-purple-400' : 'text-indigo-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
-                <h2 className="text-sm font-medium text-slate-800">User Influence</h2>
+                <h2 className={`text-sm font-medium ${isDarkTheme ? 'text-white' : 'text-slate-800'}`}>User Influence</h2>
             </div>
         </div>
       
         <div className="flex-1 flex flex-col items-center justify-center p-4">
             {influence ? (
                 <>
-                    <div className="text-6xl font-bold text-slate-800">{influencePercentage}%</div>
-                    <div className="text-lg font-medium text-slate-500">Overall Influence</div>
+                    <div className={`text-6xl font-bold ${isDarkTheme ? 'text-white' : 'text-slate-800'}`}>{influencePercentage}%</div>
+                    <div className={`text-lg font-medium ${isDarkTheme ? 'text-neutral-400' : 'text-slate-500'}`}>Overall Influence</div>
                 </>
             ) : (
-                <p className="text-sm text-slate-500">No influence data available for this user.</p>
+                <p className={`text-sm ${isDarkTheme ? 'text-neutral-400' : 'text-slate-500'}`}>No influence data available for this user.</p>
             )}
         </div>
     </div>

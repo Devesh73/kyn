@@ -63,3 +63,85 @@
     opacity: 0;
   }
 }
+
+/* FORCE Custom Scrollbar Styling with High Specificity */
+
+/* Global scrollbar reset */
+html * {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(0, 0, 0, 0.3) rgba(255, 255, 255, 0.1) !important;
+}
+
+/* High specificity webkit scrollbars */
+html *::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+  background: transparent !important;
+}
+
+html *::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-radius: 4px !important;
+  margin: 2px !important;
+}
+
+html *::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+html *::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5) !important;
+}
+
+html *::-webkit-scrollbar-thumb:active {
+  background: rgba(0, 0, 0, 0.7) !important;
+}
+
+/* Corner styling */
+html *::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+/* Specific overrides for our components */
+.scrollbar-custom,
+.scrollbar-custom *,
+div[class*="overflow-y-auto"],
+div[class*="overflow-auto"] {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.05) !important;
+}
+
+.scrollbar-custom::-webkit-scrollbar,
+.scrollbar-custom *::-webkit-scrollbar,
+div[class*="overflow-y-auto"]::-webkit-scrollbar,
+div[class*="overflow-auto"]::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track,
+.scrollbar-custom *::-webkit-scrollbar-track,
+div[class*="overflow-y-auto"]::-webkit-scrollbar-track,
+div[class*="overflow-auto"]::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05) !important;
+  border-radius: 4px !important;
+  margin: 2px !important;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb,
+.scrollbar-custom *::-webkit-scrollbar-thumb,
+div[class*="overflow-y-auto"]::-webkit-scrollbar-thumb,
+div[class*="overflow-auto"]::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.3) !important;
+  border-radius: 4px !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover,
+.scrollbar-custom *::-webkit-scrollbar-thumb:hover,
+div[class*="overflow-y-auto"]::-webkit-scrollbar-thumb:hover,
+div[class*="overflow-auto"]::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.5) !important;
+}

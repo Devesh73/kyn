@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FiSend, FiMessageSquare, FiChevronRight, FiPaperclip, FiAtSign, FiPlus, FiMail, FiHash,FiBarChart2 } from 'react-icons/fi';
+import { FiSend, FiMessageSquare, FiChevronRight, FiPaperclip, FiAtSign, FiPlus, FiMail, FiHash, FiBarChart2, FiRefreshCw } from 'react-icons/fi';
 import ReactMarkdown from 'react-markdown';
 import ProcessingSteps from './ProcessingSteps';
 import CollapsibleProcessingSteps from './CollapsibleProcessingSteps';
 
-const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
+const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed, isDarkTheme }) => {
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +14,7 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
   const sidebarRef = useRef(null);
   const textareaRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const lastMoveRef = useRef(0); // throttle reference
   
   const minWidth = 280;
   const maxWidth = 500;
@@ -42,6 +43,11 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
 
   const handleMouseMove = (e) => {
     if (!isResizing) return;
+
+    // Throttle to ~40fps
+    const now = performance.now();
+    if (now - lastMoveRef.current < 25) return;
+    lastMoveRef.current = now;
     
     const newWidth = window.innerWidth - e.clientX - 8;
     if (newWidth >= minWidth && newWidth <= maxWidth) {
@@ -252,14 +258,49 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
     }
   };
 
+  const clearChat = () => {
+    setMessages([]);
+    setInput("");
+    setIsLoading(false);
+    setCurrentSteps([]);
+    setShowSteps(false);
+  };
+
+  // Query suggestions for initial screen
+  const querySuggestions = [
+    {
+      title: "Compare Crypto & Film Users",
+      query: "Make a comparison of the prominent users interested in Cryptocurrency and film",
+      icon: "🎬"
+    },
+    {
+      title: "Top User by Following",
+      query: "What is the user with most following",
+      icon: "👑"
+    },
+    {
+      title: "Trending Topics",
+      query: "What is the most trending topics currently",
+      icon: "📈"
+    }
+  ];
+
+  const handleSuggestionClick = (query) => {
+    setInput(query);
+    // Optionally focus the textarea
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  };
+
   if (collapsed) {
     return (
       <div 
-        className="w-8 bg-white rounded-lg border border-slate-200/80 flex flex-col items-center justify-start py-2 cursor-pointer hover:bg-slate-50 transition-all duration-200"
+        className={`w-8 ${isDarkTheme ? 'bg-neutral-900 border-neutral-800' : 'bg-white border-slate-200/80'} rounded border flex flex-col items-center justify-start py-2 cursor-pointer ${isDarkTheme ? 'hover:bg-purple-900/60 hover:border-purple-800/60' : 'hover:bg-purple-50/60 hover:border-purple-200/60'} transition-all duration-200`}
         onClick={() => setCollapsed(false)}
       >
-        <div className="p-1 hover:bg-slate-100 rounded-md transition-all duration-200 group">
-          <FiMessageSquare className="w-3 h-3 text-slate-500 group-hover:text-slate-600" />
+        <div className={`p-1 ${isDarkTheme ? 'hover:bg-purple-800/60' : 'hover:bg-purple-100/60'} rounded transition-all duration-200 group`}>
+          <FiMessageSquare className={`w-3 h-3 ${isDarkTheme ? 'text-neutral-400 group-hover:text-white' : 'text-slate-500 group-hover:text-purple-600'}`} />
         </div>
       </div>
     );
@@ -268,8 +309,6 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
   const recentChats = [
     { title: "Q1 Customer Acquisition Strategy", time: "4m ago" },
     { title: "Churn prevention goals", time: "17m ago" },
-    { title: "Sales manager prep", time: "21m ago" },
-    { title: "ASCII Art of Coffee Cup", time: "47m ago" },
   ];
 
   const showRecentChats = input.trim() === "" && messages.length === 0;
@@ -277,46 +316,92 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
   return (
     <div 
       ref={sidebarRef}
-      className="bg-gradient-to-br from-white to-slate-50 rounded-lg border border-slate-200/80 shadow-lg shadow-indigo-500/10 flex overflow-hidden"
+      className={`${isDarkTheme ? 'bg-black' : 'bg-white'} rounded shadow-sm hover:shadow-md transition-shadow duration-200 flex overflow-hidden`}
       style={{ width: `${width}px` }}
     >
       {/* Resize Handle */}
       <div 
-        className="w-0.5 hover:w-1 bg-slate-300/40 hover:bg-indigo-300 cursor-col-resize transition-all duration-200 flex-shrink-0"
+        className={`w-0.5 hover:w-1 ${isDarkTheme ? 'bg-neutral-800/40 hover:bg-purple-800/60' : 'bg-slate-300/40 hover:bg-purple-300/60'} cursor-col-resize transition-all duration-200 flex-shrink-0`}
         onMouseDown={handleMouseDown}
       />
       
       {/* Sidebar Content */}
       <div className="flex-1 flex flex-col h-full">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-slate-200/80 flex items-center justify-between">
+        <div className={`p-2 border-b ${isDarkTheme ? 'border-purple-800/30' : 'border-purple-200/80'} flex items-center justify-between ${isDarkTheme ? 'bg-purple-900/20' : 'bg-purple-100/20'}`}>
           <div className="flex items-center gap-2 flex-1">
-            <span className="text-sm font-semibold text-slate-800">KYN AI</span>
+            <span className={`text-sm font-semibold ${isDarkTheme ? 'text-white' : 'text-neutral-800'}`}>KYN AI</span>
           </div>
-          <button 
-            onClick={() => setCollapsed(true)}
-            className="p-1 hover:bg-slate-100 rounded-sm transition-all duration-200"
-          >
-            <FiChevronRight className="w-4 h-4 text-slate-500" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button 
+              onClick={clearChat}
+              className={`p-1 rounded transition-all duration-200 ${isDarkTheme ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-200/50'}`}
+              title="Clear chat"
+            >
+              <FiRefreshCw className="w-3.5 h-3.5" />
+            </button>
+            <button 
+              onClick={() => setCollapsed(true)}
+              className={`p-1 rounded transition-all duration-200 ${isDarkTheme ? 'text-neutral-400 hover:bg-neutral-800 hover:text-white' : 'text-neutral-500 hover:bg-neutral-200/50'}`}
+            >
+              <FiChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-1 flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300/50 scrollbar-track-transparent hover:scrollbar-thumb-slate-400/70">
+        <div className={`flex-1 flex flex-col overflow-y-auto scrollbar-thin ${isDarkTheme ? 'scrollbar-thumb-neutral-700/50 scrollbar-track-neutral-800 hover:scrollbar-thumb-neutral-600/70' : 'scrollbar-thumb-slate-300/50 scrollbar-track-slate-100 hover:scrollbar-thumb-slate-400/70'}`}>
           {/* Messages Area or Initial Info Screen */}
           {messages.length === 0 ? (
-            <div className="flex-1 px-6 py-8 flex items-center justify-center">
-              <div className="text-center max-w-sm">
-                <div className="w-12 h-12 bg-indigo-500 rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <FiBarChart2 className="w-6 h-6 text-white" />
+            <div className="flex-1 flex flex-col">
+              {/* Info Section */}
+              <div className="px-6 py-8 flex items-center justify-center">
+                <div className="text-center max-w-sm">
+                  <div className={`w-12 h-12 ${isDarkTheme ? 'bg-purple-800' : 'bg-indigo-500'} rounded-lg flex items-center justify-center mx-auto mb-4`}>
+                    <FiBarChart2 className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className={`text-lg font-semibold ${isDarkTheme ? 'text-white' : 'text-slate-900'} mb-3`}>KYN Analytics Chat</h3>
+                  <p className={`text-sm ${isDarkTheme ? 'text-neutral-400' : 'text-slate-600'} mb-4 leading-relaxed`}>
+                    Ask questions about your social media data, get insights on communities, analyze user interactions, and explore network trends.
+                  </p>
+                  <p className={`text-xs ${isDarkTheme ? 'text-neutral-500' : 'text-slate-500'}`}>
+                    KYN is powered by AI to help you understand your social network analytics. Ask about users, communities, or trends.
+                  </p>
                 </div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-3">KYN Analytics Chat</h3>
-                <p className="text-sm text-slate-600 mb-4 leading-relaxed">
-                  Ask questions about your social media data, get insights on communities, analyze user interactions, and explore network trends.
-                </p>
-                <p className="text-xs text-slate-500">
-                  KYN is powered by AI to help you understand your social network analytics. Ask about users, communities, or trends.
-                </p>
+              </div>
+
+              {/* Query Suggestions */}
+              <div className="px-4 pb-3">
+                <h4 className={`text-xs font-medium ${isDarkTheme ? 'text-neutral-400' : 'text-slate-500'} mb-2 px-1`}>
+                  Try asking:
+                </h4>
+                <div className="space-y-1.5">
+                  {querySuggestions.map((suggestion, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleSuggestionClick(suggestion.query)}
+                      className={`w-full text-left p-2 rounded border transition-all duration-200 group ${
+                        isDarkTheme 
+                          ? 'bg-neutral-800/30 border-neutral-700/30 hover:bg-neutral-800/60 hover:border-neutral-600/60' 
+                          : 'bg-white/30 border-slate-200/30 hover:bg-white/60 hover:border-slate-300/60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm flex-shrink-0">{suggestion.icon}</span>
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-xs font-medium ${isDarkTheme ? 'text-neutral-300' : 'text-slate-700'} truncate`}>
+                            {suggestion.title}
+                          </p>
+                        </div>
+                        <FiSend className={`w-3 h-3 flex-shrink-0 ${
+                          isDarkTheme 
+                            ? 'text-neutral-500 group-hover:text-neutral-300' 
+                            : 'text-slate-400 group-hover:text-slate-600'
+                        }`} />
+                      </div>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           ) : (
@@ -335,10 +420,14 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
                   >
                     <div className={`p-3 rounded-lg text-sm ${
                       message.sender === 'bot'
-                        ? 'bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 w-full border border-slate-200/60'
-                        : 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 max-w-[85%]'
+                        ? isDarkTheme 
+                          ? 'bg-gradient-to-br from-neutral-800 to-neutral-900 text-neutral-200 w-full border border-neutral-700/60' 
+                          : 'bg-gradient-to-br from-slate-50 to-slate-100 text-slate-800 w-full border border-slate-200/60'
+                        : isDarkTheme
+                          ? 'bg-gradient-to-br from-purple-800 to-purple-900 text-white shadow-md shadow-purple-900/20 max-w-[85%]'
+                          : 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-md shadow-indigo-500/20 max-w-[85%]'
                     }`}>
-                      <ReactMarkdown className="prose prose-sm max-w-none prose-p:text-inherit prose-headings:text-inherit prose-strong:text-inherit">{message.text}</ReactMarkdown>
+                      <ReactMarkdown className={`prose prose-sm max-w-none prose-p:text-inherit prose-headings:text-inherit prose-strong:text-inherit ${isDarkTheme ? 'prose-invert' : ''}`}>{message.text}</ReactMarkdown>
                     </div>
                   </div>
                 </div>
@@ -349,13 +438,13 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
                 <div className="flex justify-start">
                   <div className="w-full">
                     {showSteps && currentSteps.length > 0 ? (
-                      <ProcessingSteps steps={currentSteps} />
+                      <ProcessingSteps steps={currentSteps} isDarkTheme={isDarkTheme} />
                     ) : (
-                      <div className="p-3 rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 text-slate-500 text-sm w-full border border-slate-200/60">
+                      <div className={`p-3 rounded-lg ${isDarkTheme ? 'bg-gradient-to-br from-neutral-800 to-neutral-900 text-neutral-400 border border-neutral-700/60' : 'bg-gradient-to-br from-slate-50 to-slate-100 text-slate-500 border border-slate-200/60'} text-sm w-full`}>
                         <div className="flex items-center gap-1.5">
-                          <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"></div>
-                          <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                          <div className={`w-1.5 h-1.5 ${isDarkTheme ? 'bg-neutral-500' : 'bg-slate-400'} rounded-full animate-bounce`}></div>
+                          <div className={`w-1.5 h-1.5 ${isDarkTheme ? 'bg-neutral-500' : 'bg-slate-400'} rounded-full animate-bounce`} style={{animationDelay: '0.1s'}}></div>
+                          <div className={`w-1.5 h-1.5 ${isDarkTheme ? 'bg-neutral-500' : 'bg-slate-400'} rounded-full animate-bounce`} style={{animationDelay: '0.2s'}}></div>
                           <span className="ml-2">Analyzing your request...</span>
                         </div>
                       </div>
@@ -369,20 +458,20 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
 
           {/* Recent Chats Section - with smooth transition */}
           <div className={`transition-all duration-300 ease-in-out overflow-hidden ${showRecentChats ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
-            <div className="px-4 py-3 border-t border-slate-200/60">
-              <h3 className="text-xs font-medium text-slate-500 mb-3">Recent chats</h3>
-              <div className="space-y-1">
+            <div className={`px-3 py-1.5 border-t ${isDarkTheme ? 'border-neutral-800/60' : 'border-purple-100/60'}`}>
+              <h3 className={`text-xs font-medium ${isDarkTheme ? 'text-neutral-400' : 'text-slate-500'} mb-1.5`}>Recent chats</h3>
+              <div className="space-y-0.5">
                 {recentChats.map((chat, index) => (
                   <button
                     key={index}
-                    className="w-full flex items-center justify-between p-2 hover:bg-slate-100 rounded-md transition-all duration-200 text-left"
+                    className={`w-full flex items-center justify-between p-1 ${isDarkTheme ? 'hover:bg-purple-900/30 hover:border-purple-800/50 border border-transparent' : 'hover:bg-purple-50 hover:border-purple-200/50 border border-transparent'} rounded text-left`}
                   >
-                    <span className="text-sm text-slate-700 truncate">{chat.title}</span>
-                    <span className="text-xs text-slate-400 ml-2 flex-shrink-0">{chat.time}</span>
+                    <span className={`text-xs ${isDarkTheme ? 'text-neutral-300' : 'text-slate-700'} truncate`}>{chat.title}</span>
+                    <span className={`text-xs ${isDarkTheme ? 'text-neutral-500' : 'text-slate-400'} ml-1.5 flex-shrink-0`}>{chat.time}</span>
                   </button>
                 ))}
-                <button className="w-full text-left p-2 hover:bg-slate-100 rounded-md transition-all duration-200">
-                  <span className="text-sm text-slate-500">See all</span>
+                <button className={`w-full text-left p-1 ${isDarkTheme ? 'hover:bg-purple-900/30 hover:border-purple-800/50 border border-transparent' : 'hover:bg-purple-50 hover:border-purple-200/50 border border-transparent'} rounded`}>
+                  <span className={`text-xs ${isDarkTheme ? 'text-neutral-500' : 'text-slate-500'}`}>See all</span>
                 </button>
               </div>
             </div>
@@ -390,12 +479,12 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
         </div>
 
         {/* Enhanced Input Area */}
-        <div className="p-2 border-t border-slate-200/80">
+        <div className={`p-2 border-t ${isDarkTheme ? 'border-neutral-800/80' : 'border-purple-100/80'}`}>
           <form onSubmit={handleSend}>
-            <div className="bg-white rounded-lg border border-slate-300/70 focus-within:border-indigo-400/80 focus-within:ring-2 focus-within:ring-indigo-300/50 transition-all duration-200 overflow-hidden">
+            <div className={`${isDarkTheme ? 'bg-neutral-800 border-neutral-700/70 focus-within:border-purple-700/80 focus-within:ring-1 focus-within:ring-purple-700/30' : 'bg-white border-slate-300/70 focus-within:border-purple-400/80 focus-within:ring-1 focus-within:ring-purple-300/30'} rounded border transition-all duration-200 overflow-hidden`}>
               <textarea
                 ref={textareaRef}
-                className="w-full bg-transparent text-sm focus:outline-none pl-3 pr-3 pt-2.5 pb-1 placeholder-slate-500 resize-none max-h-[120px] overflow-y-auto scrollbar-thin scrollbar-thumb-slate-300/40 scrollbar-track-transparent hover:scrollbar-thumb-slate-400/60"
+                className={`w-full bg-transparent text-sm focus:outline-none pl-3 pr-3 pt-2.5 pb-1 ${isDarkTheme ? 'placeholder-neutral-500 text-white' : 'placeholder-slate-500 text-slate-900'} resize-none max-h-[120px] overflow-y-auto scrollbar-thin ${isDarkTheme ? 'scrollbar-thumb-neutral-700/40 scrollbar-track-neutral-800 hover:scrollbar-thumb-neutral-600/60' : 'scrollbar-thumb-slate-300/40 scrollbar-track-transparent hover:scrollbar-thumb-slate-400/60'}`}
                 placeholder="Ask anything..."
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
@@ -404,22 +493,26 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
               />
               <div className="flex items-center justify-between px-2 pt-0.5 pb-1.5">
                   <div className="flex items-center gap-0.5">
-                      <button type="button" className="p-1 text-slate-500 hover:bg-slate-100 rounded-md transition-all duration-200">
+                      <button type="button" className={`p-1 ${isDarkTheme ? 'text-neutral-400 hover:bg-purple-800/60 hover:border-purple-700/40' : 'text-slate-500 hover:bg-purple-50/60 hover:border-purple-200/40'} border border-transparent rounded transition-all duration-200`}>
                           <FiPaperclip className="w-4 h-4" />
                       </button>
-                      <button type="button" className="p-1 text-slate-500 hover:bg-slate-100 rounded-md transition-all duration-200">
+                      <button type="button" className={`p-1 ${isDarkTheme ? 'text-neutral-400 hover:bg-purple-800/60 hover:border-purple-700/40' : 'text-slate-500 hover:bg-purple-50/60 hover:border-purple-200/40'} border border-transparent rounded transition-all duration-200`}>
                           <FiAtSign className="w-4 h-4" />
                       </button>
-                      <button type="button" className="p-1 text-slate-500 hover:bg-slate-100 rounded-md transition-all duration-200">
+                      <button type="button" className={`p-1 ${isDarkTheme ? 'text-neutral-400 hover:bg-purple-800/60 hover:border-purple-700/40' : 'text-slate-500 hover:bg-purple-50/60 hover:border-purple-200/40'} border border-transparent rounded transition-all duration-200`}>
                           <FiPlus className="w-4 h-4" />
                       </button>
                   </div>
                   <button 
                     type="submit" 
-                    className={`p-1.5 rounded-md transition-all duration-200 group relative overflow-hidden ${
+                    className={`p-1.5 rounded transition-all duration-200 group relative overflow-hidden ${
                       input.trim() && !isLoading
-                        ? 'bg-gradient-to-br from-indigo-500 to-indigo-600 text-white shadow-lg shadow-indigo-500/40'
-                        : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                        ? isDarkTheme 
+                          ? 'bg-gradient-to-br from-purple-800 to-purple-900 text-white shadow-md shadow-purple-900/30' 
+                          : 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/30'
+                        : isDarkTheme
+                          ? 'bg-neutral-700 text-neutral-500 cursor-not-allowed'
+                          : 'bg-slate-100 text-slate-400 cursor-not-allowed'
                     }`}
                     disabled={!input.trim() || isLoading}
                   >
@@ -428,7 +521,7 @@ const ResizableSidebar = ({ width, setWidth, collapsed, setCollapsed }) => {
                       ) : (
                         <>
                           <FiSend className="w-4 h-4 relative z-10" />
-                          <div className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-20"></div>
+                          <div className="absolute inset-0 bg-white opacity-0 transition-opacity duration-300 group-hover:opacity-10"></div>
                         </>
                       )}
                   </button>

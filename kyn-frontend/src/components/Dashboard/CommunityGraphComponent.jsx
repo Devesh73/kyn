@@ -9,7 +9,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import axios from "axios";
 
-const CommunityGraphComponent = () => {
+const CommunityGraphComponent = ({ isDarkTheme }) => {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [loading, setLoading] = useState(true);
@@ -173,37 +173,37 @@ const CommunityGraphComponent = () => {
 
   if (loading) {
     return (
-        <div className="bg-slate-50/60 rounded-lg border border-slate-200/40 shadow-sm p-4 h-[600px] flex items-center justify-center">
-            <p className="text-sm text-slate-500">Loading community graph data...</p>
+        <div className={`${isDarkTheme ? 'bg-black' : 'bg-white'} rounded shadow-sm p-4 h-[600px] flex items-center justify-center hover:shadow-lg transition-shadow duration-200`}>
+            <p className={`text-sm ${isDarkTheme ? 'text-neutral-400' : 'text-slate-500'}`}>Loading community graph data...</p>
         </div>
     );
   }
 
   if (error) {
     return (
-        <div className="bg-red-50 rounded-lg border border-red-200 shadow-sm p-4 h-[600px] flex items-center justify-center">
+        <div className={`${isDarkTheme ? 'bg-black' : 'bg-white'} rounded shadow-sm p-4 h-[600px] flex items-center justify-center hover:shadow-lg transition-shadow duration-200`}>
             <p className="text-sm text-red-600">{error}</p>
         </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200/80 shadow-sm h-[600px] flex flex-col">
+    <div className={`${isDarkTheme ? 'bg-black' : 'bg-white'} rounded shadow-md hover:shadow-xl transition-shadow duration-200 h-[600px] flex flex-col`}>
       {/* Header */}
-      <div className="p-3 border-b border-slate-200/80">
+      <div className={`p-3 border-b ${isDarkTheme ? 'border-neutral-800/80' : 'border-purple-100/80'}`}>
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200/80">
+                <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${isDarkTheme ? 'bg-purple-900/50 border-purple-800/80' : 'bg-indigo-50 border-indigo-200/80'} border shadow-sm`}>
                     {/* Icon for Community Graph */}
-                    <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className={`w-4 h-4 ${isDarkTheme ? 'text-purple-400' : 'text-indigo-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M12 10a4 4 0 110-5.292" />
                     </svg>
                 </div>
-                <h2 className="text-sm font-medium text-slate-800">Community Graph</h2>
+                <h2 className={`text-sm font-medium ${isDarkTheme ? 'text-white' : 'text-slate-800'}`}>Community Graph</h2>
             </div>
             {/* Dropdown for selecting communities */}
             <select
-                className="text-sm bg-slate-100/70 border border-slate-200/80 rounded-md p-1.5 focus:ring-1 focus:ring-indigo-300 focus:border-indigo-300 focus:outline-none"
+                className={`text-sm ${isDarkTheme ? 'bg-neutral-800 text-neutral-200 focus:ring-purple-700 focus:border-purple-700' : 'bg-slate-100/70 focus:ring-purple-300 focus:border-purple-300'} rounded p-1.5 focus:ring-1 focus:outline-none shadow-sm hover:shadow-md transition-shadow duration-200`}
                 value={selectedCommunity}
                 onChange={(e) => handleCommunityFilter(e.target.value)}
             >
@@ -218,7 +218,7 @@ const CommunityGraphComponent = () => {
       </div>
 
       {/* Graph */}
-      <div className="flex-1 rounded-md overflow-hidden bg-slate-50/50 p-2">
+      <div className={`flex-1 rounded overflow-hidden ${isDarkTheme ? 'bg-neutral-900/50' : 'bg-slate-50/50'} p-2`}>
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -228,9 +228,9 @@ const CommunityGraphComponent = () => {
           fitView
           minZoom={0.1}
         >
-          <MiniMap />
+          <MiniMap style={isDarkTheme ? { backgroundColor: '#171717' } : undefined} />
           <Controls />
-          <Background />
+          <Background color={isDarkTheme ? '#444' : '#ddd'} gap={12} />
         </ReactFlow>
       </div>
     </div>

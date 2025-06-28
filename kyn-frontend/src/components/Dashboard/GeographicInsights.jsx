@@ -11,7 +11,7 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-const GeographicInsights = () => {
+const GeographicInsights = ({ isDarkTheme }) => {
   const [locationData, setLocationData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -63,33 +63,38 @@ const GeographicInsights = () => {
 
   if (loading) {
     return (
-        <div className="bg-slate-50/60 rounded-lg border border-slate-200/40 shadow-sm p-4 h-[590px] flex items-center justify-center">
-            <p className="text-sm text-slate-500">Loading geographic insights...</p>
+        <div className={`${isDarkTheme ? 'bg-black' : 'bg-white'} rounded shadow-sm p-4 h-[590px] flex items-center justify-center hover:shadow-lg transition-shadow duration-200`}>
+            <p className={`text-sm ${isDarkTheme ? 'text-neutral-400' : 'text-slate-500'}`}>Loading geographic insights...</p>
         </div>
     );
   }
 
   if (error) {
     return (
-        <div className="bg-red-50 rounded-lg border border-red-200 shadow-sm p-4 h-[590px] flex items-center justify-center">
+        <div className={`${isDarkTheme ? 'bg-black' : 'bg-white'} rounded shadow-sm p-4 h-[590px] flex items-center justify-center hover:shadow-lg transition-shadow duration-200`}>
             <p className="text-sm text-red-600">{error}</p>
         </div>
     );
   }
 
+  const tileLayerUrl = isDarkTheme 
+    ? "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+    : "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png";
+
+
   return (
-    <div className="bg-white rounded-lg border border-slate-200/80 shadow-sm h-[590px] flex flex-col">
+    <div className={`${isDarkTheme ? 'bg-black' : 'bg-white'} rounded shadow-md hover:shadow-xl transition-shadow duration-200 h-[590px] flex flex-col`}>
         {/* Title */}
-        <div className="p-3 border-b border-slate-200/80">
+        <div className={`p-3 border-b ${isDarkTheme ? 'border-neutral-800/80' : 'border-purple-100/80'}`}>
             <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200/80">
+                <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${isDarkTheme ? 'bg-purple-900/50 border-purple-800/80' : 'bg-indigo-50 border-indigo-200/80'} border shadow-sm`}>
                     {/* Icon for Geographic Insights */}
-                    <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className={`w-4 h-4 ${isDarkTheme ? 'text-purple-400' : 'text-indigo-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                 </div>
-                <h2 className="text-sm font-medium text-slate-800">Geographic Insights</h2>
+                <h2 className={`text-sm font-medium ${isDarkTheme ? 'text-white' : 'text-slate-800'}`}>Geographic Insights</h2>
             </div>
         </div>
         {/* Map */}
@@ -98,7 +103,7 @@ const GeographicInsights = () => {
                 center={[20, 0]}
                 zoom={2}
                 scrollWheelZoom={true}
-                className="w-full h-full rounded-md"
+                className="w-full h-full rounded"
                 maxBounds={[
                 [-90, -180],
                 [90, 180],
@@ -108,7 +113,7 @@ const GeographicInsights = () => {
                 minZoom={2} // Limit min zoom to prevent over zoom out
             >
                 <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+                    url={tileLayerUrl}
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
                 />
                 {locationData.map(({ name, coordinates }) => (

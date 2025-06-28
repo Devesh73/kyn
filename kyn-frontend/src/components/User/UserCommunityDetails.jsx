@@ -9,7 +9,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 import axios from "axios";
 
-const UserCommunityDetails = ({ user, onCommunitySelect }) => {
+const UserCommunityDetails = ({ user, onCommunitySelect, isDarkTheme }) => {
   const [communityDetails, setCommunityDetails] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -44,7 +44,7 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
           id: userId,
           data: { label: user.name },
           position: { x: 0, y: 0 },
-          style: { background: "rgb(79, 70, 229)", color: "#fff", width: 60, height: 60, borderRadius: "50%" },
+          style: { background: isDarkTheme ? "rgb(127, 29, 29)" : "rgb(79, 70, 229)", color: "#fff", width: 60, height: 60, borderRadius: "50%" },
         });
 
         // Add other members as surrounding nodes in a circle
@@ -59,7 +59,7 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
               x: Math.cos(angle) * 300,  // Increase the multiplier for more spread
               y: Math.sin(angle) * 300,  // Increase the multiplier for more spread
             },
-            style: { background: "rgb(99, 102, 241)", color: "#fff", width: 50, height: 50, borderRadius: "50%" },
+            style: { background: isDarkTheme ? "rgb(74, 22, 128)" : "rgb(99, 102, 241)", color: "#fff", width: 50, height: 50, borderRadius: "50%" },
           });
         });
 
@@ -71,7 +71,7 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
               source: interaction.attributes.source_user,
               target: interaction.attributes.target_user,
               label: interaction.attributes.interaction_type,
-              style: { stroke: "rgba(99, 102, 241, 1)" },
+              style: { stroke: isDarkTheme ? "rgba(167, 139, 250, 1)" : "rgba(99, 102, 241, 1)" },
             });
           } else if (interaction.attributes.interaction_type === "followed_by") {
             allEdges.push({
@@ -79,7 +79,7 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
               source: interaction.attributes.target_user,
               target: interaction.attributes.source_user,
               label: interaction.attributes.interaction_type,
-              style: { stroke: "#64748b" },
+              style: { stroke: isDarkTheme ? "#6b7280" : "#64748b" },
             });
           }
         });
@@ -96,7 +96,7 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
     };
 
     fetchCommunityDetails();
-  }, [user]);
+  }, [user, isDarkTheme]);
 
   const handleNodeDoubleClick = (event, node) => {
     if (highlightedNode === node.id) {
@@ -139,8 +139,8 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
 
   if (loading) {
     return (
-        <div className="bg-slate-50/60 rounded-lg border border-slate-200/40 shadow-sm p-4 h-[700px] flex items-center justify-center">
-            <p className="text-sm text-slate-500">Loading community details...</p>
+        <div className={`${isDarkTheme ? 'bg-black' : 'bg-slate-50/60'} rounded-lg border ${isDarkTheme ? 'border-neutral-800' : 'border-slate-200/40'} shadow-sm p-4 h-[700px] flex items-center justify-center`}>
+            <p className={`text-sm ${isDarkTheme ? 'text-neutral-400' : 'text-slate-500'}`}>Loading community details...</p>
         </div>
     );
   }
@@ -154,18 +154,18 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg border border-slate-200/80 shadow-sm flex flex-col h-[700px]">
-        <div className="p-3 border-b border-slate-200/80">
+    <div className={`${isDarkTheme ? 'bg-black' : 'bg-white'} rounded-lg border ${isDarkTheme ? 'border-neutral-800' : 'border-slate-200/80'} shadow-md hover:shadow-xl transition-shadow duration-200 flex flex-col h-[700px]`}>
+        <div className={`p-3 border-b ${isDarkTheme ? 'border-neutral-800' : 'border-slate-200/80'}`}>
             <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200/80">
-                    <svg className="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${isDarkTheme ? 'bg-purple-900/50 border-purple-800/80' : 'bg-indigo-50 border-indigo-200/80'} border shadow-sm`}>
+                    <svg className={`w-4 h-4 ${isDarkTheme ? 'text-purple-400' : 'text-indigo-600'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M12 10a4 4 0 110-5.292" />
                     </svg>
                 </div>
-                <h2 className="text-sm font-medium text-slate-800">User's Community Graph</h2>
+                <h2 className={`text-sm font-medium ${isDarkTheme ? 'text-white' : 'text-slate-800'}`}>User's Community Graph</h2>
             </div>
         </div>
-        <div className="flex-1 rounded-md overflow-hidden bg-slate-50/50 p-2">
+        <div className={`flex-1 rounded-md overflow-hidden ${isDarkTheme ? 'bg-neutral-900/50' : 'bg-slate-50/50'} p-2`}>
             <ReactFlow
                 nodes={nodes}
                 edges={edges}
@@ -175,9 +175,9 @@ const UserCommunityDetails = ({ user, onCommunitySelect }) => {
                 fitView
                 minZoom={0.1}
             >
-                <MiniMap />
+                <MiniMap style={isDarkTheme ? { backgroundColor: '#171717' } : undefined} />
                 <Controls />
-                <Background />
+                <Background color={isDarkTheme ? '#444' : '#ddd'} gap={12} />
             </ReactFlow>
         </div>
     </div>

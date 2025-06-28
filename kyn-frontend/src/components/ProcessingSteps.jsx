@@ -1,7 +1,7 @@
 import React from 'react';
 import { FiCheck, FiLoader, FiAlertTriangle, FiX } from 'react-icons/fi';
 
-const ProcessingSteps = ({ steps }) => {
+const ProcessingSteps = ({ steps, isDarkTheme }) => {
   
   const getStatusIcon = (status) => {
     switch (status) {
@@ -19,17 +19,32 @@ const ProcessingSteps = ({ steps }) => {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'processing':
-        return 'border-blue-200 bg-blue-50';
-      case 'completed':
-        return 'border-green-200 bg-green-50';
-      case 'warning':
-        return 'border-yellow-200 bg-yellow-50';
-      case 'error':
-        return 'border-red-200 bg-red-50';
-      default:
-        return 'border-gray-200 bg-gray-50';
+    if (isDarkTheme) {
+      switch (status) {
+        case 'processing':
+          return 'border-blue-800 bg-blue-950/50';
+        case 'completed':
+          return 'border-green-800 bg-green-950/50';
+        case 'warning':
+          return 'border-yellow-800 bg-yellow-950/50';
+        case 'error':
+          return 'border-red-800 bg-red-950/50';
+        default:
+          return 'border-neutral-700 bg-neutral-800/50';
+      }
+    } else {
+      switch (status) {
+        case 'processing':
+          return 'border-blue-200 bg-blue-50';
+        case 'completed':
+          return 'border-green-200 bg-green-50';
+        case 'warning':
+          return 'border-yellow-200 bg-yellow-50';
+        case 'error':
+          return 'border-red-200 bg-red-50';
+        default:
+          return 'border-gray-200 bg-gray-50';
+      }
     }
   };
 
@@ -61,8 +76,8 @@ const ProcessingSteps = ({ steps }) => {
   }
 
   return (
-    <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-200">
-      <div className="text-xs font-semibold text-gray-600 mb-2 flex items-center gap-1">
+    <div className={`${isDarkTheme ? 'bg-neutral-900 border-neutral-800' : 'bg-gray-50 border-gray-200'} rounded-lg p-3 mb-3 border`}>
+      <div className={`text-xs font-semibold ${isDarkTheme ? 'text-neutral-400' : 'text-gray-600'} mb-2 flex items-center gap-1`}>
         <FiLoader className="w-3 h-3" />
         Processing Details
       </div>
@@ -76,14 +91,14 @@ const ProcessingSteps = ({ steps }) => {
               {getStatusIcon(step.status)}
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-medium text-gray-800">
+              <div className={`text-xs font-medium ${isDarkTheme ? 'text-neutral-200' : 'text-gray-800'}`}>
                 {getStepTitle(step.step)}
               </div>
-              <div className="text-xs text-gray-600 break-words">
+              <div className={`text-xs ${isDarkTheme ? 'text-neutral-400' : 'text-gray-600'} break-words`}>
                 {step.message}
               </div>
               {step.data && (
-                <div className="text-xs text-gray-500 mt-1">
+                <div className={`text-xs ${isDarkTheme ? 'text-neutral-500' : 'text-gray-500'} mt-1`}>
                   {step.data.apis && (
                     <span>APIs: {step.data.apis.join(', ')}</span>
                   )}
